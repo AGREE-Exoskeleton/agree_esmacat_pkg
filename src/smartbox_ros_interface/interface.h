@@ -64,7 +64,7 @@ public:
 //    boost_ROS_subscribe_thread.join();
   }
 
-  uint8_t interim_state;
+  uint64_t interim_state;
 
 private:
 

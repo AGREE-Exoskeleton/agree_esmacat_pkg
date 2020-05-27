@@ -54,7 +54,7 @@ public:
   esmacat_ros_interface()
   {
     boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface::ROS_publish_thread, this);
-//    boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface::ROS_subscribe_thread, this);
+    boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface::ROS_subscribe_thread, this);
 //    boost_ROS_command_thread  = boost::thread(&esmacat_ros_interface::ROS_command_thread, this);
     std::cout << "ROS interface objects instantiated" << std::endl;
     esmacat_sm.init();
@@ -67,7 +67,7 @@ public:
     boost_ROS_subscribe_thread.join();
   }
 
-//  RobotState interim_state;
+//  RobotState interim_state;elapsed_time
   esmacat_shared_memory_comm esmacat_sm;
 
 private:

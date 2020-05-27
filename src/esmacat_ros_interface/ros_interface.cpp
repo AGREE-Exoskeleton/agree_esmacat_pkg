@@ -26,7 +26,7 @@ void esmacat_ros_interface::ROS_publish_thread(){
       msg.data = esmacat_sm.data->loop_cnt;
       publisher.publish(msg);
 
-    if(esmacat_sm.data->stop == true) ros::shutdown();
+//    if(esmacat_sm.data->stop == true) ros::shutdown();
 
     loop_rate.sleep();
     interim_roscount++;
@@ -184,8 +184,9 @@ void esmacat_ros_interface::ROS_subscribe_thread(){
 void esmacat_ros_interface::ROS_subscribe_callback(const std_msgs::Int64 msg)
 {
   //Display data from hard real-time loop to the the terminal.
-  ROS_INFO(" Enc:[%i]",msg.data);
-  esmacat_sm.data->state = msg.data;
+  //  ROS_INFO(" Enc:[%i]",msg.data);
+  esmacat_sm.data->elapsed_time =  msg.data;
+  std::cout << esmacat_sm.data->elapsed_time << endl;
 }
 
 // Print commands on terminal

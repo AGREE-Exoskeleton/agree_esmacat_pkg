@@ -165,7 +165,7 @@ void smartbox_interface::ROS_command_thread(){
                  */
 
 
-      interim_state = state;
+      interim_state = (uint64_t) state;
 
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
