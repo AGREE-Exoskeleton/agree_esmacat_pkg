@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 
   smartbox_interface smartbox_ros;
 
-  ros::MultiThreadedSpinner spinner(1); // Use 4 threads
+  ros::MultiThreadedSpinner spinner(4); // Use 4 threads
   spinner.spin();
 
   return 0;
