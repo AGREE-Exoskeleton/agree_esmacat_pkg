@@ -11,7 +11,7 @@ void smartbox_interface::ROS_publish_thread(){
 
   //Variables that setup the publishing loop
   interim_state = 0;
-  double command_period_in_seconds = 10;
+//  double command_period_in_seconds = 10;
 
   while (ros::ok()){
 

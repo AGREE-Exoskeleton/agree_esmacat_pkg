@@ -8,15 +8,24 @@
 #include <iostream>
 
 
+struct esmacat_sensor{
+
+};
+
+struct esmacat_command{
+
+};
 
 class esmacat_shared_memory_comm
 {
     struct shared_memory_packet {
-        float analog_input[16];
-        bool stop = false;
-        double elapsed_time = 0;
-        uint64_t loop_cnt = 0;              // count of loop
-        uint64_t state = 1;
+        float           analog_input[16];
+        bool            stop = false;
+        double          elapsed_time = 0;
+        uint64_t        loop_cnt = 0;
+        uint64_t        state = 1;
+        esmacat_command command;
+        esmacat_sensor  sensor;
     };
 private:
     key_t key;

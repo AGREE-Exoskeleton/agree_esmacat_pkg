@@ -16,18 +16,18 @@ int main(int argc, char **argv)
     spinner.spin();
 
 
-////    ros::Publisher chatter_pub = nh.advertise<std_msgs::Int64>("loop_cnt", 1000);
+//    ros::Publisher chatter_pub = nh.advertise<std_msgs::Int64>("loop_cnt", 1000);
 
-////    ros::Rate loop_rate(100);
+//    ros::Rate loop_rate(100);
 //    while (ros::ok())
 //    {
-////        std_msgs::Int64 msg;
-////        msg.data = esmacat_sm.data->loop_cnt;
-////        chatter_pub.publish(msg);
+//        std_msgs::Int64 msg;
+//        msg.data = esmacat_sm.data->loop_cnt;
+//      chatter_pub.publish(msg);
 
 //        ros::spinOnce();
 
-////        loop_rate.sleep();
+//       loop_rate.sleep();
 
 //        if (ros_interface.esmacat_sm.data->stop)
 //        {
