@@ -1,6 +1,6 @@
 #include "esmacat_shared_memory_comm.h"
 #include "ros/ros.h"
-#include "ros_interface.h"
+#include "esmacat_ros_interface.h"
 
 using namespace  std;
 

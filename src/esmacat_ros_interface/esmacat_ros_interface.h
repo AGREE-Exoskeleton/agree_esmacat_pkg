@@ -4,14 +4,14 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <boost/thread/thread.hpp>
+
 #include "ros/ros.h"
-//#include "esmacat_ros_interface/"
 #include "agree_esmacat_pkg/agree_esmacat_status.h"
-//#include "esmacat_pkg/esmacat_sensor.h"
-//#include "esmacat_pkg/esmacat_command.h"
+#include "agree_esmacat_pkg/agree_esmacat_command.h"
+
 #include "std_msgs/Int64.h"
 #include "std_msgs/String.h"
-#include <boost/thread/thread.hpp>
 
 #include "esmacat_shared_memory_comm.h"
 
@@ -83,7 +83,7 @@ private:
   void ROS_subscribe_thread();
   void ROS_publish_thread();
 //  void ROS_command_thread();
-  void ROS_subscribe_callback(const std_msgs::Int64 msg);
+  void ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg);
 
   void print_command_keys();
 

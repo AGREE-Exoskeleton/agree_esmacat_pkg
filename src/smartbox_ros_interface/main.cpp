@@ -1,4 +1,4 @@
-#include "interface.h"
+#include "smartbox_ros_interface.h"
 
 int main(int argc, char **argv)
 {

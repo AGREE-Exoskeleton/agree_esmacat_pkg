@@ -4,11 +4,15 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include "ros/ros.h"
-#include "std_msgs/Int64.h"
-//#include "esmacat_pkg/esmacat_sensor.h"
-//#include "esmacat_pkg/esmacat_command.h"
 #include <boost/thread/thread.hpp>
+#include <time.h>
+#define BILLION 1000000000L
+
+#include "ros/ros.h"
+#include "agree_esmacat_pkg/agree_esmacat_status.h"
+#include "agree_esmacat_pkg/agree_esmacat_command.h"
+
+#include "std_msgs/Int64.h"
 
 using namespace std;
 
@@ -51,34 +55,39 @@ public:
   smartbox_interface()
   {
     boost_ROS_publish_thread    = boost::thread(&smartbox_interface::ROS_publish_thread, this);
-    //boost_ROS_subscribe_thread  = boost::thread(&smartbox_interface::ROS_subscribe_thread, this);
+    boost_ROS_subscribe_thread  = boost::thread(&smartbox_interface::ROS_subscribe_thread, this);
     boost_ROS_command_thread  = boost::thread(&smartbox_interface::ROS_command_thread, this);
     std::cout << "ROS interface objects instantiated" << std::endl;
-
+    interim_state = STOP;
+    interim_impedance_stiffness = 0;
+    interim_impedance_damping = 0;
   }
 
   ~smartbox_interface()
   {
     std::cout << "ROS interface threads joining" << std::endl;
     boost_ROS_publish_thread.join();
-//    boost_ROS_subscribe_thread.join();
+    boost_ROS_subscribe_thread.join();
   }
 
   uint64_t interim_state;
+  float interim_impedance_damping;
+  float interim_impedance_stiffness;
 
 private:
 
   boost::thread boost_ROS_publish_thread;
-//  boost::thread boost_ROS_subscribe_thread;
+  boost::thread boost_ROS_subscribe_thread;
   boost::thread boost_ROS_command_thread;
 
-//  void ROS_subscribe_thread();
+  void ROS_subscribe_thread();
   void ROS_publish_thread();
   void ROS_command_thread();
-//  void ROS_subscribe_callback(const esmacat_pkg::esmacat_sensor msg);
+  void ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_status msg);
 
   void print_command_keys();
 
+  timespec diff(timespec , timespec );
 
 };
 

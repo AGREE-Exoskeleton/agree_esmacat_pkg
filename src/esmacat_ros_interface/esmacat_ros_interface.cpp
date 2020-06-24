@@ -1,5 +1,7 @@
-#include "ros_interface.h"
+#include "esmacat_ros_interface.h"
 #include "ros/ros.h"
+#include <string.h>
+#include <stdio.h>
 
 /************************/
 /* ROS Publisher Thread */
@@ -13,7 +15,7 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
   //    std_msgs::Int64 msg;
   agree_esmacat_pkg::agree_esmacat_status msg;
   ros::NodeHandle n;
-  ros::Rate loop_rate(200);
+  ros::Rate loop_rate(100);
   ros::Publisher publisher = n.advertise<agree_esmacat_pkg::agree_esmacat_status>("esmacat/status", 1000);
 
 
@@ -47,9 +49,12 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
 
     publisher.publish(msg);
-    //      ROS_INFO("Publisher: loop_cnt %d",msg.data);
-    //    if(esmacat_sm.data->stop == true) ros::shutdown();
-
+//    ROS_INFO("Publisher: loop_cnt %f",msg.elapsed_time);
+//    if(esmacat_sm.data->state == 0)
+//    {
+//      ROS_INFO("Hard Real-Time Node Killed");
+//      ros::shutdown();
+//    }
     loop_rate.sleep();
     interim_roscount++;
     if (esmacat_sm.data->stop)
@@ -57,7 +62,6 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
       ROS_INFO("esmacat_ros_interface_node killed");
       ros::shutdown();
       break;
-
     }
   }
 
@@ -79,14 +83,13 @@ void esmacat_ros_interface_class::ROS_subscribe_thread(){
   spinner.spin();
 }
 
-void esmacat_ros_interface_class::ROS_subscribe_callback(const std_msgs::Int64 msg)
+void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg)
 {
   //Display data from hard real-time loop to the the terminal.
-  esmacat_sm.data->state =  msg.data;
+  esmacat_sm.data->state =  msg.mode;
   if(prev_state != esmacat_sm.data->state)
   {
-
-    ROS_INFO("Change State to: %c", &state_labels[esmacat_sm.data->state]);
+    ROS_INFO("Change State to: %s",state_labels[msg.mode].c_str());
   };
   prev_state = esmacat_sm.data->state;
   //std::cout << esmacat_sm.data->state << endl;
