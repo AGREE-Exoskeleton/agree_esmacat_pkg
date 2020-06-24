@@ -1,5 +1,6 @@
-#include "esmacat_ros_interface_node.h"
 #include "esmacat_shared_memory_comm.h"
+#include "ros/ros.h"
+#include "ros_interface.h"
 
 using namespace  std;
 
@@ -10,7 +11,7 @@ int main(int argc, char **argv)
 
     ROS_INFO("esmacat_ros_interface node launched");
 
-    esmacat_ros_interface ros_interface;
+    esmacat_ros_interface_class ros_interface;
 
     ros::MultiThreadedSpinner spinner(4); // Use 4 threads
     spinner.spin();

@@ -5,6 +5,7 @@
 #include <thread>
 #include <chrono>
 #include "ros/ros.h"
+#include "esmacat_ros_interface/agree_esmacat_status.h"
 //#include "esmacat_pkg/esmacat_sensor.h"
 //#include "esmacat_pkg/esmacat_command.h"
 #include "std_msgs/Int64.h"
@@ -48,19 +49,19 @@ const string state_labels[] = {
 //  QUIT,
 //};
 
-class esmacat_ros_interface
+class esmacat_ros_interface_class
 {
 public:
-  esmacat_ros_interface()
+  esmacat_ros_interface_class()
   {
-    boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface::ROS_publish_thread, this);
-    boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface::ROS_subscribe_thread, this);
+    boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface_class::ROS_publish_thread, this);
+    boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface_class::ROS_subscribe_thread, this);
 //    boost_ROS_command_thread  = boost::thread(&esmacat_ros_interface::ROS_command_thread, this);
     ROS_INFO("ROS threads instantiated");
     esmacat_sm.init();
   }
 
-  ~esmacat_ros_interface()
+  ~esmacat_ros_interface_class()
   {
     std::cout << "ROS interface threads joining" << std::endl;
     boost_ROS_publish_thread.join();

@@ -5,15 +5,16 @@
 /* ROS Publisher Thread */
 /************************/
 
-void esmacat_ros_interface::ROS_publish_thread(){
+void esmacat_ros_interface_class::ROS_publish_thread(){
 
 
     //Declare a message and setup the publisher for that message
     //  esmacat_ros_interface::esmacat_command command;
-    std_msgs::Int64 msg;
+//    std_msgs::Int64 msg;
+    esmacat_ros_interface::agree_esmacat_status msg;
     ros::NodeHandle n;
     ros::Rate loop_rate(100);
-    ros::Publisher publisher = n.advertise<std_msgs::Int64>("esmacat_sensor", 1000);
+    ros::Publisher publisher = n.advertise<esmacat_ros_interface::agree_esmacat_status>("esmacat/status", 1000);
 
 
     //Variables that setup the publishing loop
@@ -23,7 +24,12 @@ void esmacat_ros_interface::ROS_publish_thread(){
 
         //    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
         //    command.state = interim_state;
-        msg.data = (int64_t)esmacat_sm.data->loop_cnt;
+        msg.elapsed_time = esmacat_sm.data->elapsed_time;
+        msg.mode         = esmacat_sm.data->state;
+        msg.encoder_position = 2108.0;
+        msg.loadcell_torque  = 1992.0;
+        msg.setpoint_torque  = 2000.0;
+
         publisher.publish(msg);
         //      ROS_INFO("Publisher: loop_cnt %d",msg.data);
         //    if(esmacat_sm.data->stop == true) ros::shutdown();
@@ -45,19 +51,19 @@ void esmacat_ros_interface::ROS_publish_thread(){
 /* ROS Subscriber Thread */
 /************************/
 
-void esmacat_ros_interface::ROS_subscribe_thread(){
+void esmacat_ros_interface_class::ROS_subscribe_thread(){
 
     //Setup a subscriber that will get data from other ROS nodes
     ros::MultiThreadedSpinner spinner(1); // Use 4 threads
 
     ros::NodeHandle n;
 
-    ros::Subscriber subscriber = n.subscribe("esmacat_command", 1000, &esmacat_ros_interface::ROS_subscribe_callback, this);
+    ros::Subscriber subscriber = n.subscribe("esmacat_command", 1000, &esmacat_ros_interface_class::ROS_subscribe_callback, this);
 
     spinner.spin();
 }
 
-void esmacat_ros_interface::ROS_subscribe_callback(const std_msgs::Int64 msg)
+void esmacat_ros_interface_class::ROS_subscribe_callback(const std_msgs::Int64 msg)
 {
     //Display data from hard real-time loop to the the terminal.
     esmacat_sm.data->state =  msg.data;
@@ -70,7 +76,7 @@ void esmacat_ros_interface::ROS_subscribe_callback(const std_msgs::Int64 msg)
     //std::cout << esmacat_sm.data->state << endl;
 }
 
-void esmacat_ros_interface::print_command_keys()
+void esmacat_ros_interface_class::print_command_keys()
 {
     std::cout << boldred_key << "\nCOMMAND KEYS:"<< color_key << std::endl;
     std::cout << blue_key << "\'k\'" << color_key << ": exit" << "\n";

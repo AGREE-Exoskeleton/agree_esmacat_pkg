@@ -7,7 +7,7 @@ void smartbox_interface::ROS_publish_thread(){
 //  esmacat_pkg::esmacat_command command;
   ros::NodeHandle n;
   ros::Rate loop_rate(100);
-  ros::Publisher pub_esmacat_write = n.advertise<std_msgs::Int64>("esmacat_command",1000);
+  ros::Publisher pub_esmacat_write = n.advertise<std_msgs::Int64>("esmacat/command",1000);
 
   //Variables that setup the publishing loop
   interim_state = 0;
