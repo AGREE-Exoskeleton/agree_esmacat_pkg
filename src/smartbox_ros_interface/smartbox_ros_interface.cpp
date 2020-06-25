@@ -14,14 +14,14 @@ void smartbox_interface::ROS_publish_thread(){
 
   //Variables that setup the publishing loop
   int interim_roscount = 0;
-//  double command_period_in_seconds = 10;
+  //  double command_period_in_seconds = 10;
 
 
   while (ros::ok()){
 
     //SPEED CONTROL SINUSOIDAL COMMAND -----------------------------------------------------------
-//    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
-//    command.state = interim_state;
+    //    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
+    //    command.state = interim_state;
     msg.mode     = interim_state;
     msg.damping_d = interim_impedance_damping;
     msg.stiffness_k = interim_impedance_stiffness;
@@ -166,66 +166,72 @@ void smartbox_interface::ROS_command_thread(){
         }
         break;
       case 'd': case 'D':
-          if(c != '\n'){
-            std::cout << yellow_key << "Impedance DAMPING change selection:" << color_key << std::endl;
-            c = cin.get();
-            switch(c){
-            case '+':
+        if(c != '\n'){
+          std::cout << yellow_key << "Impedance DAMPING change selection:" << color_key << std::endl;
+          c = cin.get();
+          switch(c){
+          case '+':
 
-              interim_impedance_damping += 0.5;
-              std::cout << green_key << "Impedance DAMPING increased to " << yellow_key << interim_impedance_damping <<  color_key << std::endl;
+            interim_impedance_damping += 0.5;
+            std::cout << green_key << "Impedance DAMPING increased to " << yellow_key << interim_impedance_damping <<  color_key << std::endl;
 
-              break;
-            case '-':
-              if(interim_impedance_damping > 0) interim_impedance_damping -= 0.5;
-
-                std::cout << green_key << "Impedance DAMPING decreased to " << yellow_key << interim_impedance_damping <<  color_key << std::endl;
-
-              break;
-            default:
-              std::cout << yellow_key << "Impedance DAMPING not changed: " << interim_impedance_damping <<  color_key << std::endl;
-
-              break;
+            break;
+          case '-':
+            if(interim_impedance_damping > 0)
+            {
+              interim_impedance_damping -= 0.5;
+              std::cout << green_key << "Impedance DAMPING decreased to " << yellow_key << interim_impedance_damping <<  color_key << std::endl;
             }
+            else
+            {
+              ROS_WARN("Impedance DAMPING not changed: %f", interim_impedance_damping);
+            }
+            break;
+          default:
+            ROS_WARN("Impedance DAMPING not changed: %f", interim_impedance_damping);
+
+            break;
           }
+        }
         break;
 
       case 'k': case 'K':
-          if(c != '\n'){
-            std::cout << yellow_key << "Impedance STIFFNESS change selection: " << color_key << std::endl;
-            c = cin.get();
-            switch(c){
-            case '+':
+        if(c != '\n'){
+          std::cout << yellow_key << "Impedance STIFFNESS change selection: " << color_key << std::endl;
+          c = cin.get();
+          switch(c){
+          case '+':
 
-              interim_impedance_stiffness += 0.5;
-              std::cout << green_key << "Impedance STIFFNESS increased to " << yellow_key << interim_impedance_stiffness <<  color_key << std::endl;
+            interim_impedance_stiffness += 0.5;
+            std::cout << green_key << "Impedance STIFFNESS increased to " << yellow_key << interim_impedance_stiffness <<  color_key << std::endl;
 
-              break;
-            case '-':
-              if(interim_impedance_stiffness > 0) interim_impedance_stiffness -= 0.5;
-
-                std::cout << green_key << "Impedance STIFFNESS decreased to " << yellow_key << interim_impedance_stiffness <<  color_key << std::endl;
-
-              break;
-            default:
-              std::cout << yellow_key << "Impedance STIFFNESS not changed: " << interim_impedance_stiffness <<  color_key << std::endl;
-
-              break;
+            break;
+          case '-':
+            if(interim_impedance_stiffness > 0)
+            {
+              interim_impedance_stiffness -= 0.5;
+              std::cout << green_key << "Impedance STIFFNESS decreased to " << yellow_key << interim_impedance_stiffness <<  color_key << std::endl;
             }
+            else
+            {
+              ROS_WARN("Impedance STIFFNESS not changed: %f", interim_impedance_stiffness);
+            }
+            break;
+          default:
+            ROS_WARN("Impedance STIFFNESS not changed: %f", interim_impedance_stiffness);
+
+            break;
           }
+        }
         break;
 
       case ' ':
         print_command_keys();
         break;
       default:
-        std::cout << red_key << "Unrecognized key input!" << color_key <<  std::endl;
+        ROS_ERROR("Unrecognized Command");;
         break;
       }
-
-      /**
-                 * This is a message object. You stuff it with data, and then publish it.
-                 */
 
 
       interim_state = (uint64_t) state;
@@ -273,7 +279,7 @@ void smartbox_interface::ROS_subscribe_callback(const agree_esmacat_pkg::agree_e
 {
   //Display data from hard real-time loop to the the terminal.
   if( (msg.elapsed_time)%100==0){
-    ROS_INFO("Received: %f",msg.loadcell_torque[1]);
+    //ROS_INFO("Received: %f",msg.loadcell_torque[1]);
     //ros::shutdown();
   }
 }

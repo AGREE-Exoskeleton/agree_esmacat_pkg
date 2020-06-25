@@ -89,10 +89,20 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   esmacat_sm.data->state =  msg.mode;
   if(prev_state != esmacat_sm.data->state)
   {
-    ROS_INFO("Change State to: %s",state_labels[msg.mode].c_str());
+    ROS_INFO("Change MODE to: %s",state_labels[msg.mode].c_str());
   };
-  prev_state = esmacat_sm.data->state;
-  //std::cout << esmacat_sm.data->state << endl;
+
+  if(prev_damping != msg.damping_d){
+    ROS_INFO("Change DAMPING to: %f",msg.damping_d);
+  }
+
+  if(prev_stiffness != msg.stiffness_k){
+    ROS_INFO("Change STIFFNESS to: %f",msg.stiffness_k);
+  }
+
+  prev_state = msg.mode;
+  prev_stiffness = msg.stiffness_k;
+  prev_damping   = msg.damping_d;
 }
 
 void esmacat_ros_interface_class::print_command_keys()

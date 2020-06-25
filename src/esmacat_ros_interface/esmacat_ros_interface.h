@@ -75,6 +75,8 @@ public:
 private:
 
   uint64_t prev_state;
+  double   prev_stiffness;
+  double   prev_damping;
 
   boost::thread boost_ROS_publish_thread;
   boost::thread boost_ROS_subscribe_thread;
