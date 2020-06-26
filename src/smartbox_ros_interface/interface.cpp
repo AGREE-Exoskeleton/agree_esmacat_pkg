@@ -140,6 +140,18 @@ void smartbox_interface::ROS_command_thread(){
           std::cout << yellow_key << "Already in FREEZE mode" << color_key <<  std::endl;
         }
         break;
+      case 'i': case 'I':
+        if (state != IMPEDANCE)
+        {
+          std::cout << green_key << "Quick-swapped to IMPEDANCE mode!" << color_key << std::endl;
+          state = IMPEDANCE;
+          swap_state = true;
+        }
+        else
+        {
+          std::cout << yellow_key << "Already in FREEZE mode" << color_key <<  std::endl;
+        }
+        break;
       case 'k': case 'K':
 
         if (state == STOP or state == EXIT)
@@ -191,12 +203,13 @@ void smartbox_interface::ROS_subscribe_callback(const esmacat_pkg::esmacat_senso
 void smartbox_interface::print_command_keys()
 {
   std::cout << boldred_key << "\nCOMMAND KEYS:"<< color_key << std::endl;
-  std::cout << blue_key << "\'k\'" << color_key << ": exit" << "\n";
+  std::cout << blue_key << "\'k\'" << color_key << ": EXIT" << "\n";
   std::cout << blue_key << "\'s\'" << color_key << ": STOP mode"<< "\n";
   std::cout << blue_key << "\'c\'" << color_key << ": CURRENT mode"<< "\n";
   std::cout << blue_key << "\'t\'" << color_key << ": TORQUE mode"<< "\n";
   std::cout << blue_key << "\'n\'" << color_key << ": NULL-TORQUE mode" << "\n";
   std::cout << blue_key << "\'g\'" << color_key << ": GRAVITY mode"<< "\n";
   std::cout << blue_key << "\'f\'" << color_key << ": FREEZE mode"<< "\n";
+  std::cout << blue_key << "\'i\'" << color_key << ": IMPEDANCE mode"<< "\n";
   std::cout << blue_key << "\'ENTER\'" << color_key << ": SHOW current settings and command keys\n"<< "\n";
 }

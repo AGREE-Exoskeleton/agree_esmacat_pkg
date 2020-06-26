@@ -11,9 +11,13 @@ void esmacat_ros_interface::ROS_publish_thread(){
     //Declare a message and setup the publisher for that message
     //  esmacat_ros_interface::esmacat_command command;
     std_msgs::Int64 msg;
+    std_msgs::Float64 msg_float;
+
     ros::NodeHandle n;
     ros::Rate loop_rate(100);
     ros::Publisher publisher = n.advertise<std_msgs::Int64>("esmacat_sensor", 1000);
+    ros::Publisher publisher_measured_torque = n.advertise<std_msgs::Float64>("esmacat_measured_torque", 1000);
+    ros::Publisher publisher_measured_position = n.advertise<std_msgs::Float64>("esmacat_measured_position", 1000);
 
 
     //Variables that setup the publishing loop
@@ -27,6 +31,12 @@ void esmacat_ros_interface::ROS_publish_thread(){
         publisher.publish(msg);
         //      ROS_INFO("Publisher: loop_cnt %d",msg.data);
         //    if(esmacat_sm.data->stop == true) ros::shutdown();
+        msg_float.data = (float_t) esmacat_sm.data->joint_status.loadcell_torque_mNm;
+        publisher_measured_torque.publish(msg_float);
+
+        msg_float.data = (float_t) esmacat_sm.data->joint_status.incremental_encoder_position_radians;
+        publisher_measured_position.publish(msg_float);
+
 
         loop_rate.sleep();
         interim_roscount++;
@@ -63,8 +73,7 @@ void esmacat_ros_interface::ROS_subscribe_callback(const std_msgs::Int64 msg)
     esmacat_sm.data->state =  msg.data;
     if(prev_state != esmacat_sm.data->state)
     {
-
-        ROS_INFO("Change State to: %c", &state_labels[esmacat_sm.data->state]);
+        ROS_INFO("Change State to: %s", &state_labels[(int) esmacat_sm.data->state]);
     };
     prev_state = esmacat_sm.data->state;
     //std::cout << esmacat_sm.data->state << endl;

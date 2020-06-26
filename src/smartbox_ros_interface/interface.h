@@ -30,7 +30,7 @@ const string state_labels[] = {
   "NULLTORQUE",
   "GRAVITY",
   "FREEZE",
-  "QUIT",
+  "IMPEDANCE",
 };
 
 enum RobotState
@@ -42,7 +42,7 @@ enum RobotState
   NULLTORQUE,
   GRAVITY,
   FREEZE,
-  QUIT,
+  IMPEDANCE,
 };
 
 class smartbox_interface
@@ -61,7 +61,7 @@ public:
   {
     std::cout << "ROS interface threads joining" << std::endl;
     boost_ROS_publish_thread.join();
-//    boost_ROS_subscribe_thread.join();
+    //boost_ROS_command_thread.join();
   }
 
   uint64_t interim_state;

@@ -8,6 +8,7 @@
 //#include "esmacat_pkg/esmacat_sensor.h"
 //#include "esmacat_pkg/esmacat_command.h"
 #include "std_msgs/Int64.h"
+#include "std_msgs/Float64.h"
 #include "std_msgs/String.h"
 #include <boost/thread/thread.hpp>
 
@@ -33,7 +34,7 @@ const string state_labels[] = {
   "NULLTORQUE",
   "GRAVITY",
   "FREEZE",
-  "QUIT",
+  "IMPEDANCE",
 };
 
 //enum RobotState
