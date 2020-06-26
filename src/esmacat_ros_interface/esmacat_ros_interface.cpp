@@ -94,12 +94,12 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 
   if(prev_damping != msg.damping_d){
     ROS_INFO("Change DAMPING to: %f",msg.damping_d);
-    esmacat_sm.data->joint_controller.impedance_control_k_gain_mNm_per_rad = msg.stiffness_k;
     esmacat_sm.data->joint_controller.impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d;
   }
 
   if(prev_stiffness != msg.stiffness_k){
     ROS_INFO("Change STIFFNESS to: %f",msg.stiffness_k);
+    esmacat_sm.data->joint_controller.impedance_control_k_gain_mNm_per_rad = msg.stiffness_k;
   }
 
   prev_state = msg.mode;
