@@ -17,7 +17,8 @@ class esmacat_shared_memory_comm
         double          elapsed_time = 0;
         uint64_t        loop_cnt = 0;
         uint64_t        state = 1;
-        joint_status_t  joint_status;
+        joint_status_t  joint_status[2];
+        joint_impedance_control_status_t impedance_status;
         joint_controller_configuration_t joint_controller;
     };
 

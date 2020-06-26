@@ -27,24 +27,27 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     //    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
     //    command.state = interim_state
     esmacat_sm.data->elapsed_time++;
-    msg.elapsed_time = esmacat_sm.data->elapsed_time+1;
+    msg.elapsed_time = esmacat_sm.data->elapsed_time;
     msg.mode         = esmacat_sm.data->state;
 
     msg.encoder_position.clear();
-    msg.encoder_position.push_back(1);
-    msg.encoder_position.push_back(2);
-    msg.encoder_position.push_back(3);
-    msg.encoder_position.push_back(4);
+    msg.encoder_position.push_back(esmacat_sm.data->joint_status[0].incremental_encoder_position_radians);
+    msg.encoder_position.push_back(-esmacat_sm.data->joint_status[1].incremental_encoder_position_radians);
+    msg.encoder_position.push_back(3.0);
+    msg.encoder_position.push_back(4.0);
+    msg.encoder_position.push_back(5.0);
 
     //sin(2*M_PI*msg.elapsed_time/100));
-    msg.loadcell_torque[0]  = esmacat_sm.data->elapsed_time+1;
-    msg.loadcell_torque[1]  = -esmacat_sm.data->elapsed_time+1;
+    msg.loadcell_torque[0]  = esmacat_sm.data->joint_status[0].loadcell_torque_mNm;
+    msg.loadcell_torque[1]  = -esmacat_sm.data->joint_status[1].loadcell_torque_mNm;
     msg.loadcell_torque[2]  = 0.0;
-    msg.loadcell_torque[3]  = sin(2*M_PI*msg.elapsed_time/100);
+    msg.loadcell_torque[3]  = 0.0;
 
-    for(int i=0;i<5;i++){
-      msg.loadcell_torque[i]  = esmacat_sm.data->elapsed_time*i;
-    }
+    //msg.setpoint_torque[0] = esmacat_sm.data->joint_controller.control_mode;
+
+    //for(int i=0;i<5;i++){
+    //  msg.loadcell_torque[i]  = esmacat_sm.data->elapsed_time*i;
+    //}
 
 
 
@@ -86,22 +89,22 @@ void esmacat_ros_interface_class::ROS_subscribe_thread(){
 void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg)
 {
   //Display data from hard real-time loop to the the terminal.
-  esmacat_sm.data->state =  msg.mode;
-  if(prev_state != esmacat_sm.data->state)
-  {
+  if(prev_state != esmacat_sm.data->state)  {
     ROS_INFO("Change MODE to: %s",state_labels[msg.mode].c_str());
   };
 
   if(prev_damping != msg.damping_d){
     ROS_INFO("Change DAMPING to: %f",msg.damping_d);
-    esmacat_sm.data->joint_controller.impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d;
   }
 
   if(prev_stiffness != msg.stiffness_k){
     ROS_INFO("Change STIFFNESS to: %f",msg.stiffness_k);
-    esmacat_sm.data->joint_controller.impedance_control_k_gain_mNm_per_rad = msg.stiffness_k;
   }
 
+  esmacat_sm.data->state =  msg.mode;
+  esmacat_sm.data->joint_controller.impedance_control_k_gain_mNm_per_rad = msg.stiffness_k;
+  esmacat_sm.data->joint_controller.impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d;
+  esmacat_sm.data->impedance_status.impedance_control_setpoint_rad = msg.setpoint;
   prev_state = msg.mode;
   prev_stiffness = msg.stiffness_k;
   prev_damping   = msg.damping_d;

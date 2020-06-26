@@ -14,6 +14,7 @@ void smartbox_interface::ROS_publish_thread(){
 
   //Variables that setup the publishing loop
   int interim_roscount = 0;
+  double sine = 0;
   //  double command_period_in_seconds = 10;
 
 
@@ -25,7 +26,8 @@ void smartbox_interface::ROS_publish_thread(){
     msg.mode     = interim_state;
     msg.damping_d = interim_impedance_damping;
     msg.stiffness_k = interim_impedance_stiffness;
-    msg.setpoint = 100*sin(2.0*M_PI*interim_roscount++/50.0);
+    sine = sin(2*3.1415*(double)interim_roscount++/500.0);
+    msg.setpoint = M_PI/4*sine;
 
     clock_gettime( CLOCK_REALTIME, &temp);
 
