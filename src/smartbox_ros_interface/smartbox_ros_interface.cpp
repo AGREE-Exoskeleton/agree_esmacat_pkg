@@ -1,29 +1,41 @@
-#include "interface.h"
+#include "smartbox_ros_interface.h"
 
 void smartbox_interface::ROS_publish_thread(){
 
+  struct timespec t0,temp,timestamp;
+  clock_gettime( CLOCK_REALTIME, &t0);
 
   //Declare a message and setup the publisher for that message
-//  esmacat_pkg::esmacat_command command;
   ros::NodeHandle n;
   ros::Rate loop_rate(100);
-  ros::Publisher pub_esmacat_write = n.advertise<std_msgs::Int64>("esmacat_command",1000);
+  agree_esmacat_pkg::agree_esmacat_command msg;
+
+  ros::Publisher pub_esmacat_write = n.advertise<agree_esmacat_pkg::agree_esmacat_command>("esmacat/command",1000);
 
   //Variables that setup the publishing loop
-  interim_state = 0;
-//  double command_period_in_seconds = 10;
+  int interim_roscount = 0;
+  //  double command_period_in_seconds = 10;
+
 
   while (ros::ok()){
 
     //SPEED CONTROL SINUSOIDAL COMMAND -----------------------------------------------------------
-//    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
-//    command.state = interim_state;
-    std_msgs::Int64 msg;
-    msg.data = interim_state;
+    //    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
+    //    command.state = interim_state;
+    msg.mode     = interim_state;
+    msg.damping_d = interim_impedance_damping;
+    msg.stiffness_k = interim_impedance_stiffness;
+    msg.setpoint = 100*sin(2.0*M_PI*interim_roscount++/50.0);
+
+    clock_gettime( CLOCK_REALTIME, &temp);
+
+    timestamp = diff(t0,temp);
+    msg.timestamp = (float)(timestamp.tv_sec);
+    //t0=temp;
     //--------------------------------------------------------------------------------------------
     //Send data to the hard real-time loop
     pub_esmacat_write.publish(msg);
-//    if(interim_state==EXIT) ros::shutdown();
+    if(interim_state==0) ros::shutdown();
 
     loop_rate.sleep();
   }
@@ -34,7 +46,7 @@ void smartbox_interface::ROS_publish_thread(){
 /* ROS Subscriber Thread */
 /************************/
 
-/*
+
 void smartbox_interface::ROS_subscribe_thread(){
 
   //Setup a subscriber that will get data from other ROS nodes
@@ -42,11 +54,11 @@ void smartbox_interface::ROS_subscribe_thread(){
 
   ros::NodeHandle n;
 
-  ros::Subscriber subscriber = n.subscribe("EsmaCAT_pub_ecat_ros", 1000, &smartbox_interface::ROS_subscribe_callback, this);
+  ros::Subscriber subscriber = n.subscribe("esmacat/status", 1000, &smartbox_interface::ROS_subscribe_callback, this);
 
   spinner.spin();
 }
-*/
+
 
 void smartbox_interface::ROS_command_thread(){
 
@@ -54,6 +66,7 @@ void smartbox_interface::ROS_command_thread(){
   char c;
   string inputString;
   RobotState state(STOP);
+
   bool swap_state(false);
 
   print_command_keys();
@@ -152,7 +165,7 @@ void smartbox_interface::ROS_command_thread(){
           std::cout << yellow_key << "Already in FREEZE mode" << color_key <<  std::endl;
         }
         break;
-      case 'k': case 'K':
+      case 'x': case 'X':
 
         if (state == STOP or state == EXIT)
         {   swap_state = true;
@@ -164,17 +177,73 @@ void smartbox_interface::ROS_command_thread(){
 
         }
         break;
+      case 'd': case 'D':
+        if(c != '\n'){
+          std::cout << yellow_key << "Impedance DAMPING change selection:" << color_key << std::endl;
+          c = cin.get();
+          switch(c){
+          case '+':
+
+            interim_impedance_damping += 0.5;
+            std::cout << green_key << "Impedance DAMPING increased to " << yellow_key << interim_impedance_damping <<  color_key << std::endl;
+
+            break;
+          case '-':
+            if(interim_impedance_damping > 0)
+            {
+              interim_impedance_damping -= 0.5;
+              std::cout << green_key << "Impedance DAMPING decreased to " << yellow_key << interim_impedance_damping <<  color_key << std::endl;
+            }
+            else
+            {
+              ROS_WARN("Impedance DAMPING not changed: %f", interim_impedance_damping);
+            }
+            break;
+          default:
+            ROS_WARN("Impedance DAMPING not changed: %f", interim_impedance_damping);
+
+            break;
+          }
+        }
+        break;
+
+      case 'k': case 'K':
+        if(c != '\n'){
+          std::cout << yellow_key << "Impedance STIFFNESS change selection: " << color_key << std::endl;
+          c = cin.get();
+          switch(c){
+          case '+':
+
+            interim_impedance_stiffness += 0.5;
+            std::cout << green_key << "Impedance STIFFNESS increased to " << yellow_key << interim_impedance_stiffness <<  color_key << std::endl;
+
+            break;
+          case '-':
+            if(interim_impedance_stiffness > 0)
+            {
+              interim_impedance_stiffness -= 0.5;
+              std::cout << green_key << "Impedance STIFFNESS decreased to " << yellow_key << interim_impedance_stiffness <<  color_key << std::endl;
+            }
+            else
+            {
+              ROS_WARN("Impedance STIFFNESS not changed: %f", interim_impedance_stiffness);
+            }
+            break;
+          default:
+            ROS_WARN("Impedance STIFFNESS not changed: %f", interim_impedance_stiffness);
+
+            break;
+          }
+        }
+        break;
+
       case ' ':
         print_command_keys();
         break;
       default:
-        std::cout << red_key << "Unrecognized key input!" << color_key <<  std::endl;
+        ROS_ERROR("Unrecognized Command");;
         break;
       }
-
-      /**
-                 * This is a message object. You stuff it with data, and then publish it.
-                 */
 
 
       interim_state = (uint64_t) state;
@@ -184,7 +253,7 @@ void smartbox_interface::ROS_command_thread(){
     }
     else
     {
-      std::cout << yellow_key << state_labels[state] << color_key << " is the state currently active" << std::endl;
+      std::cout << yellow_key << state_labels[state] << color_key << " is the state currently active" << std::endl << std::endl;
     } // else
 
   } // while
@@ -203,7 +272,7 @@ void smartbox_interface::ROS_subscribe_callback(const esmacat_pkg::esmacat_senso
 void smartbox_interface::print_command_keys()
 {
   std::cout << boldred_key << "\nCOMMAND KEYS:"<< color_key << std::endl;
-  std::cout << blue_key << "\'k\'" << color_key << ": EXIT" << "\n";
+  std::cout << blue_key << "\'x\'" << color_key << ": EXIT" << "\n";
   std::cout << blue_key << "\'s\'" << color_key << ": STOP mode"<< "\n";
   std::cout << blue_key << "\'c\'" << color_key << ": CURRENT mode"<< "\n";
   std::cout << blue_key << "\'t\'" << color_key << ": TORQUE mode"<< "\n";
@@ -211,5 +280,32 @@ void smartbox_interface::print_command_keys()
   std::cout << blue_key << "\'g\'" << color_key << ": GRAVITY mode"<< "\n";
   std::cout << blue_key << "\'f\'" << color_key << ": FREEZE mode"<< "\n";
   std::cout << blue_key << "\'i\'" << color_key << ": IMPEDANCE mode"<< "\n";
+  std::cout << blue_key << "\'d+\'" << color_key << ": increase DAMPING"<< "\n";
+  std::cout << blue_key << "\'d-\'" << color_key << ": decrease DAMPING"<< "\n";
+  std::cout << blue_key << "\'k+\'" << color_key << ": increase STIFFNESS"<< "\n";
+  std::cout << blue_key << "\'k-\'" << color_key << ": decrease STIFFNESS"<< "\n";
+
   std::cout << blue_key << "\'ENTER\'" << color_key << ": SHOW current settings and command keys\n"<< "\n";
+}
+
+void smartbox_interface::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_status msg)
+{
+  //Display data from hard real-time loop to the the terminal.
+  if( (msg.elapsed_time)%100==0){
+    //ROS_INFO("Received: %f",msg.loadcell_torque[1]);
+    //ros::shutdown();
+  }
+}
+
+timespec smartbox_interface::diff(timespec start, timespec end)
+{
+  timespec temp;
+  if ((end.tv_nsec-start.tv_nsec)<0) {
+    temp.tv_sec = end.tv_sec-start.tv_sec-1;
+    temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+  } else {
+    temp.tv_sec = end.tv_sec-start.tv_sec;
+    temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+  }
+  return temp;
 }

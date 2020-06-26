@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>esmacat_ros_interface</name>
+  <name>agree_esmacat_pkg</name>
   <version>0.1.0</version>
   <description>The esmacat_ros_interface package</description>
 
