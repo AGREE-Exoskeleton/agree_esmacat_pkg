@@ -89,9 +89,9 @@ void esmacat_ros_interface_class::ROS_subscribe_thread(){
 void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg)
 {
   //Display data from hard real-time loop to the the terminal.
-  if(prev_state != esmacat_sm.data->state)  {
+  if(prev_state != msg.mode)  {
     ROS_INFO("Change MODE to: %s",state_labels[msg.mode].c_str());
-  };
+  }
 
   if(prev_damping != msg.damping_d){
     ROS_INFO("Change DAMPING to: %f",msg.damping_d);
