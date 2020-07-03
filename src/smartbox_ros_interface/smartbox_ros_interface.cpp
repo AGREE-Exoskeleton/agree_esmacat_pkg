@@ -67,7 +67,7 @@ void smartbox_interface::ROS_command_thread(){
   //Initialize Robot status
   char c;
   string inputString;
-  RobotState state(STOP);
+  uint8_t state(STOP);
 
   bool swap_state(false);
 
@@ -167,6 +167,33 @@ void smartbox_interface::ROS_command_thread(){
           std::cout << yellow_key << "Already in FREEZE mode" << color_key <<  std::endl;
         }
         break;
+
+      case 'p': case 'P':
+        if (state != POSITION)
+        {
+          std::cout << green_key << "Quick-swapped to POSITION mode!" << color_key << std::endl;
+          state = POSITION;
+          swap_state = true;
+        }
+        else
+        {
+          std::cout << yellow_key << "Already in POSITION mode" << color_key <<  std::endl;
+        }
+        break;
+
+      case 'h': case 'H':
+        if (state != HOMING)
+        {
+          std::cout << green_key << "Quick-swapped to HOMING mode!" << color_key << std::endl;
+          state = HOMING;
+          swap_state = true;
+        }
+        else
+        {
+          std::cout << yellow_key << "Already in HOMING mode" << color_key <<  std::endl;
+        }
+        break;
+
       case 'x': case 'X':
 
         if (state == STOP or state == EXIT)

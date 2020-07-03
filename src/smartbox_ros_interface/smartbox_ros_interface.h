@@ -15,6 +15,17 @@
 
 #include "std_msgs/Int64.h"
 
+#define EXIT    0
+#define STOP    1
+#define CURRENT 2
+#define TORQUE  3
+#define NULLTORQUE 4
+#define GRAVITY 5
+#define FREEZE  6
+#define IMPEDANCE 7
+#define HOMING  8
+#define POSITION 9
+
 using namespace std;
 
 // Text Color Identifiers
@@ -36,19 +47,21 @@ const string state_labels[] = {
   "GRAVITY",
   "FREEZE",
   "IMPEDANCE",
+    "HOMING",
+    "POSITION",
 };
 
-enum RobotState
-{
-  EXIT,
-  STOP,
-  CURRENT,
-  TORQUE,
-  NULLTORQUE,
-  GRAVITY,
-  FREEZE,
-  IMPEDANCE,
-};
+//enum RobotState
+//{
+//  EXIT,
+//  STOP,
+//  CURRENT,
+//  TORQUE,
+//  NULLTORQUE,
+//  GRAVITY,
+//  FREEZE,
+//  IMPEDANCE,
+//};
 
 class smartbox_interface
 {

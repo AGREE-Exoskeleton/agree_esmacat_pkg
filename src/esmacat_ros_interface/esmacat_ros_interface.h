@@ -37,6 +37,8 @@ const string state_labels[] = {
   "GRAVITY",
   "FREEZE",
   "IMPEDANCE",
+    "HOMING",
+    "POSITION",
 };
 
 //enum RobotState
