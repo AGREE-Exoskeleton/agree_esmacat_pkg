@@ -15,14 +15,9 @@ void smartbox_interface::ROS_publish_thread(){
   //Variables that setup the publishing loop
   int interim_roscount = 0;
   double sine = 0;
-  //  double command_period_in_seconds = 10;
-
 
   while (ros::ok()){
 
-    //SPEED CONTROL SINUSOIDAL COMMAND -----------------------------------------------------------
-    //    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
-    //    command.state = interim_state;
     msg.mode     = interim_state;
     msg.damping_d = interim_impedance_damping;
     msg.stiffness_k = interim_impedance_stiffness;
@@ -33,9 +28,7 @@ void smartbox_interface::ROS_publish_thread(){
 
     timestamp = diff(t0,temp);
     msg.timestamp = (float)(timestamp.tv_sec);
-    //t0=temp;
-    //--------------------------------------------------------------------------------------------
-    //Send data to the hard real-time loop
+
     pub_esmacat_write.publish(msg);
     if(interim_state==0) ros::shutdown();
 

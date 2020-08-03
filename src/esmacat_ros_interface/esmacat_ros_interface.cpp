@@ -32,8 +32,8 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
     msg.encoder_position.clear();
     msg.encoder_position.push_back(esmacat_sm.data->joint_status[0].incremental_encoder_position_radians);
-    msg.encoder_position.push_back(-esmacat_sm.data->joint_status[1].incremental_encoder_position_radians);
-    msg.encoder_position.push_back(3.0);
+    msg.encoder_position.push_back(esmacat_sm.data->joint_status[0].velocity_rad_per_s);
+    msg.encoder_position.push_back(esmacat_sm.data->joint_status[0].velocity_computed_rad_per_s);
     msg.encoder_position.push_back(4.0);
     msg.encoder_position.push_back(5.0);
 
