@@ -229,3 +229,4 @@ include_directories(
 
 add_subdirectory(src/smartbox_ros_interface)
 add_subdirectory(src/esmacat_ros_interface)
+add_subdirectory(src/testbed_ros_interface)

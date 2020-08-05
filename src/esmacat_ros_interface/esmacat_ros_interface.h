@@ -60,34 +60,30 @@ public:
   {
     boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface_class::ROS_publish_thread, this);
     boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface_class::ROS_subscribe_thread, this);
-//    boost_ROS_command_thread  = boost::thread(&esmacat_ros_interface::ROS_command_thread, this);
-    ROS_INFO("ROS threads instantiated");
+    ROS_INFO("AGREE ROS Interface threads instantiated");
     esmacat_sm.init();
   }
 
   ~esmacat_ros_interface_class()
   {
-    std::cout << "ROS interface threads joining" << std::endl;
     boost_ROS_publish_thread.join();
     boost_ROS_subscribe_thread.join();
   }
 
-//  RobotState interim_state;elapsed_time
   esmacat_shared_memory_comm esmacat_sm;
 
 private:
 
-  uint64_t prev_state;
+  uint64_t prev_command;
   double   prev_stiffness;
   double   prev_damping;
 
   boost::thread boost_ROS_publish_thread;
   boost::thread boost_ROS_subscribe_thread;
-//  boost::thread boost_ROS_command_thread;
 
   void ROS_subscribe_thread();
   void ROS_publish_thread();
-//  void ROS_command_thread();
+
   void ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg);
 
   void print_command_keys();

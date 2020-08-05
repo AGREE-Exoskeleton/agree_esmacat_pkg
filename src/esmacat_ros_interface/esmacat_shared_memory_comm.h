@@ -1,6 +1,6 @@
 #ifndef ESMACAT_SHARED_MEMORY_COMM_H
 #define ESMACAT_SHARED_MEMORY_COMM_H
-#define DEFAULT_ROS_KEY_ID  2108        // street number of Harmonic Bionics
+#define DEFAULT_ROS_KEY_ID  202020
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -12,13 +12,12 @@
 class esmacat_shared_memory_comm
 {
     struct shared_memory_packet {
-        float           analog_input[16];
         bool            stop = false;
         double          elapsed_time = 0;
-        uint64_t        loop_cnt = 0;
-        uint64_t        state = 1;
-        uint64_t        command = 1;
-        joint_status_t  joint_status[2];
+        uint64_t        loop_cnt    = 0;
+        uint64_t        status      = 1;
+        uint64_t        command     = 1;
+        joint_status_t                   joint_status;
         joint_impedance_control_status_t impedance_status;
         joint_controller_configuration_t joint_controller;
     };
