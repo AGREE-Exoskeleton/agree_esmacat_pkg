@@ -311,53 +311,154 @@ void testbed_ros_interface::ROS_command_thread(){
 
 void testbed_ros_interface::adaptive_control_thread(){
 
+    //TODO: Change initial interim_setpoint
+    //interim_setpoint = interim_position;
+
     while (ros::ok()){
 
         // State Impedance - used for testbed tests
         if(interim_status == IMPEDANCE)
         {
-            // If the sub-task ended
-            if(interim_swap_state){
 
-                interim_elapsed_time_offset = interim_elapsed_time;
-                interim_position = interim_setpoint_final;
+            float interim_time_exercise;
 
-                interim_position_offset = interim_position;
-                interim_swap_state = false;
+            switch(interim_exercise_status){
 
-                if(interim_sign==1){
-                    interim_setpoint_final = M_PI/3;
+            // First case
+            case REST:
+
+                // Update Impedance Paramters
+                interim_impedance_stiffness = 30.0;
+                interim_impedance_damping   = 3.0;
+
+                // Increase counter
+                interim_exercise_counter++;
+
+                // Timeout Condition
+                if(interim_exercise_counter > TRIGGER_REST_TIMEOUT)
+                {
+                    // If the joint is closer to START wrt STOP -> Set exercise setpoint
+                    if (abs(interim_position - EXERCISE_START) < abs(interim_position - EXERCISE_STOP))
+                    {
+                        // Setpoint set to STOP
+                        interim_setpoint_final = EXERCISE_STOP;
+                    }
+                    else
+                    {
+                        // Setpoint is START
+                        interim_setpoint_final = EXERCISE_START;
+                    }
+
+                    // Exit State
+                    interim_exercise_status = WAIT;
+                    interim_exercise_counter = 0;
+
+                    interim_setpoint = interim_position;
+                    interim_setpoint_start = interim_position;
+
+                    // Update Impedance Parameters
+                    interim_impedance_stiffness = 0.0;
+                    interim_impedance_damping = 0.1;
                 }
-                else if(interim_sign==-1){
-                    interim_setpoint_final = 0;
+                break;
+
+            case WAIT:
+
+                // Follow Trajectory
+                interim_setpoint = interim_position;
+
+                // Increase counter
+                interim_exercise_counter++;
+
+                // Trigger Condition + Timeout Condition
+                if(abs(interim_position - interim_setpoint_start) >= TRIGGER_THRESHOLD || interim_exercise_counter > TRIGGER_TIMEOUT)
+                {
+                    // Update Impedance Parameters
+                    interim_impedance_stiffness = 5.0;
+                    interim_impedance_damping = 0.5;
+
+                    // Save Offset
+                    interim_elapsed_time_offset = interim_elapsed_time;
+                    interim_position_offset = interim_position;
+
+                    // Exit State
+                    interim_exercise_status = MOVE_UP;
+                    interim_exercise_counter = 0;
                 }
+
+            break;
+
+            case MOVE_UP:
+
+                // Compute time variable
+                interim_time_exercise = (interim_elapsed_time-interim_elapsed_time_offset);
+
+                /**
+                // Tanh(t)
+                // interim_setpoint = interim_position_offset+(interim_setpoint_final-interim_position_offset)/2*(tanh((interim_elapsed_time-interim_elapsed_time_offset)/100-5)+1);
+
+                // Sine(2*pi*w*t)
+                //interim_setpoint = 5 + interim_sign*5*sin((2*M_PI*((double)interim_time_exercise++/1000.0))-M_PI/2); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
+                **/
+                // 5th order
+                interim_setpoint = interim_position_offset+static_cast<float>((interim_setpoint_final-interim_position_offset)*
+                                    (10*pow(interim_time_exercise/interim_duration,3)
+                                     -15*pow(interim_time_exercise/interim_duration,4)
+                                     +6*pow(interim_time_exercise/interim_duration,5)));
+
+                // TODO: Update Stiffness & Damping
+
+                // Reach Condition
+                if(interim_position > (interim_setpoint_final - TRIGGER_THRESHOLD/4))
+                {
+                    // Exit State
+                    interim_exercise_status = REST;
+                    interim_setpoint = interim_position;
+                }
+
+                break;
+
+            case MOVE_DOWN:
+
+                // Compute time variable
+                interim_time_exercise = (interim_elapsed_time-interim_elapsed_time_offset);
+
+                /**
+                // Tanh(t)
+                // interim_setpoint = interim_position_offset+(interim_setpoint_final-interim_position_offset)/2*(tanh((interim_elapsed_time-interim_elapsed_time_offset)/100-5)+1);
+
+                // Sine(2*pi*w*t)
+                //interim_setpoint = 5 + interim_sign*5*sin((2*M_PI*((double)interim_time_exercise++/1000.0))-M_PI/2); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
+                **/
+                // 5th order
+                interim_setpoint = interim_position_offset+static_cast<float>((interim_setpoint_final-interim_position_offset)*
+                                    (10*pow(interim_time_exercise/interim_duration,3)
+                                     -15*pow(interim_time_exercise/interim_duration,4)
+                                     +6*pow(interim_time_exercise/interim_duration,5)));
+
+                // TODO: Update Stiffness & Damping
+
+                // Reach Condition
+                if(interim_position < (interim_setpoint_final + TRIGGER_THRESHOLD/4))
+                {
+                    // Exit State
+                    interim_exercise_status = REST;
+                    interim_setpoint = interim_position;
+                }
+
+                break;
             }
 
-            float interim_time_exercise = (interim_elapsed_time-interim_elapsed_time_offset);
-
-            // Tanh(t)
-            // interim_setpoint = interim_position_offset+(interim_setpoint_final-interim_position_offset)/2*(tanh((interim_elapsed_time-interim_elapsed_time_offset)/100-5)+1);
-
-            // Sine(2*pi*w*t)
-            //interim_setpoint = 5 + interim_sign*5*sin((2*M_PI*((double)interim_time_exercise++/1000.0))-M_PI/2); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
-
-            // 5th order
-            interim_setpoint = interim_position_offset+static_cast<float>((interim_setpoint_final-interim_position_offset)*
-                                (10*pow(interim_time_exercise/interim_duration,3)
-                                 -15*pow(interim_time_exercise/interim_duration,4)
-                                 +6*pow(interim_time_exercise/interim_duration,5)));
-
-            if(interim_time_exercise >= interim_duration)
-            {
-                interim_swap_state  = true;
-                interim_sign        = -interim_sign;
-            }
-//            cout << "Timestamp: " << interim_elapsed_time - interim_elapsed_time_offset << endl;
-//            interim_impedance_stiffness++;
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
+        else{
+
+            // During other modes, update setpoint to interim_position -> Motor follows movement
+            interim_setpoint = interim_position;
+        }
+
+        // ~100 Hz Control Frequency
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
 }

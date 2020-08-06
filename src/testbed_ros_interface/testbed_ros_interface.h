@@ -18,6 +18,7 @@
 
 #include "std_msgs/Int64.h"
 
+// EsmaBox FSM
 #define EXIT    0
 #define STOP    1
 #define CURRENT 2
@@ -28,6 +29,19 @@
 #define IMPEDANCE 7
 #define HOMING  8
 #define POSITION 9
+
+// Exercise FSM
+#define REST 0
+#define WAIT 1
+#define MOVE_UP 2
+#define MOVE_DOWN 3
+
+#define EXERCISE_START 0
+#define EXERCISE_STOP M_PI/3
+
+#define TRIGGER_THRESHOLD    0.1
+#define TRIGGER_REST_TIMEOUT 100 // 100 counter = 1s
+#define TRIGGER_TIMEOUT      150
 
 #define SUB_TASK_DURATION 4000
 
@@ -83,6 +97,7 @@ public:
     interim_impedance_stiffness = 0;
     interim_impedance_damping = 0;
     interim_setpoint = 0;
+    interim_setpoint_start = 0;
     interim_setpoint_final = 0;
     interim_duration = SUB_TASK_DURATION; // ms
     interim_elapsed_time = 0;
@@ -102,7 +117,10 @@ public:
 
   // Command variables
   uint64_t interim_status;
-  bool interim_swap_state = false;
+  uint64_t interim_exercise_status = REST;
+  float    interim_exercise_counter = 0;
+
+  bool      interim_swap_state;
 
   float interim_impedance_damping;
   float interim_impedance_stiffness;
@@ -110,6 +128,7 @@ public:
   float interim_duration; // Sub-task duration
   float interim_amplitude;
   float interim_setpoint_final;
+  float interim_setpoint_start;
 
   // Status variables
   float interim_position;
