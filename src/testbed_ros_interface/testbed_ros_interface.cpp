@@ -23,9 +23,11 @@ void testbed_ros_interface::ROS_publish_thread(){
   int interim_roscount = 0;
   double sine = 0;
 
+  openfile();
+
   while (ros::ok()){
 
-    msg.command     = interim_state;
+    msg.command     = interim_status;
     msg.damping_d = interim_impedance_damping;
     msg.stiffness_k = interim_impedance_stiffness;
     sine = sin(2*3.1415*(double)interim_roscount++/500.0); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
@@ -37,7 +39,8 @@ void testbed_ros_interface::ROS_publish_thread(){
     msg.timestamp = (float)(timestamp.tv_sec);
 
     pub_esmacat_write.publish(msg);
-    if(interim_state==0) ros::shutdown();
+
+    write2file();
 
     loop_rate.sleep();
   }
@@ -280,9 +283,17 @@ void testbed_ros_interface::ROS_command_thread(){
       }
 
 
-      interim_state = (uint64_t) state;
+      interim_status = (uint64_t) state;
+
+      if(!interim_status) {
+          closefile();
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          ros::shutdown();
+      }
 
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+
 
     }
     else
@@ -303,7 +314,7 @@ void testbed_ros_interface::adaptive_control_thread(){
     while (ros::ok()){
 
         // State Impedance - used for testbed tests
-        if(interim_state == IMPEDANCE)
+        if(interim_status == IMPEDANCE)
         {
             // If the sub-task ended
             if(interim_swap_state){
@@ -313,6 +324,7 @@ void testbed_ros_interface::adaptive_control_thread(){
 
                 interim_position_offset = interim_position;
                 interim_swap_state = false;
+
                 if(interim_sign==1){
                     interim_setpoint_final = M_PI/3;
                 }
@@ -343,14 +355,11 @@ void testbed_ros_interface::adaptive_control_thread(){
 //            cout << "Timestamp: " << interim_elapsed_time - interim_elapsed_time_offset << endl;
 //            interim_impedance_stiffness++;
 
-
-
-
-
-
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
+
     }
+
 }
 
 
@@ -399,3 +408,68 @@ timespec testbed_ros_interface::diff(timespec start, timespec end)
   }
   return temp;
 }
+
+// //////////////////////////////////////////////////////////////////
+// ////////////// Log file Initialization  //////////////////////////
+/// \brief testbed_ros_interface::openfile
+///
+void testbed_ros_interface::openfile(){
+    time_t t = time(nullptr);   // get time now
+    struct tm * now = localtime( & t );
+    char buffer [80];
+    strftime (buffer,80,"AGREE-ROS-Interface-%Y-%m-%d-%H-%M-%S.csv",now);
+    log.open (buffer);
+    if(log.is_open())
+    {
+        ROS_INFO("Log file opened successfully");
+
+        log << endl
+
+                << "J_elapsed_time"     << ","
+                << "J_status"           << ","
+                << "J_position_rad"     << ","
+                << "J_velocity_rad_s"   << ","
+                << "J_torque_mNm"       << ","
+
+                << "I_setpoint_rad"     << ","
+                << "I_stiffness"          << ","
+                << "I_damping"          << ","
+                << "I_duration"         << ","
+                << "I_amplitude"        << ","
+
+                << "I_score_k"          << ","
+                << "I_score_t"          << ","
+                ;
+    }
+
+}
+
+// //////////////////////////////////////////////////////////////////
+// ////////////// Log file Write  ///////////////////////////////////
+void testbed_ros_interface::write2file(){
+
+    log << endl
+
+            << interim_elapsed_time << ","
+            << interim_status << ","
+            << interim_position << ","
+            << interim_speed << ","
+            << interim_torque << ","
+
+            << interim_setpoint << ","
+            << interim_impedance_stiffness << ","
+            << interim_impedance_damping << ","
+            << interim_duration << ","
+            << interim_amplitude << ","
+
+            << interim_score_k << ","
+            << interim_score_t << ",";
+}
+
+void testbed_ros_interface::closefile(){
+    log.close();
+    ROS_INFO("Log file closed successfully");
+
+}
+
+

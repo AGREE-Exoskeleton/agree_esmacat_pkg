@@ -2,6 +2,7 @@
 #define INTERFACE_H
 
 #include <iostream>
+#include <fstream>
 #include <thread>
 #include <chrono>
 #include <boost/thread/thread.hpp>
@@ -78,10 +79,11 @@ public:
     boost_adaptive_control_thread  = boost::thread(&testbed_ros_interface::adaptive_control_thread, this);
 
     std::cout << "ROS interface objects instantiated" << std::endl;
-    interim_state = STOP;
+    interim_status = STOP;
     interim_impedance_stiffness = 0;
     interim_impedance_damping = 0;
     interim_setpoint = 0;
+    interim_setpoint_final = 0;
     interim_duration = SUB_TASK_DURATION; // ms
     interim_elapsed_time = 0;
     interim_sign = 1;
@@ -99,13 +101,14 @@ public:
   }
 
   // Command variables
-  uint64_t interim_state;
+  uint64_t interim_status;
   bool interim_swap_state = false;
 
   float interim_impedance_damping;
   float interim_impedance_stiffness;
   float interim_setpoint;
   float interim_duration; // Sub-task duration
+  float interim_amplitude;
   float interim_setpoint_final;
 
   // Status variables
@@ -122,7 +125,11 @@ public:
   float interim_position_offset;
   int interim_sign;
 
-
+  // Log
+  ofstream log;
+  void openfile();
+  void write2file();
+  void closefile();
 
 private:
 
