@@ -19,31 +19,34 @@
 #include "std_msgs/Int64.h"
 
 // EsmaBox FSM
-#define EXIT    0
-#define STOP    1
-#define CURRENT 2
-#define TORQUE  3
-#define NULLTORQUE 4
-#define GRAVITY 5
-#define FREEZE  6
-#define IMPEDANCE 7
-#define HOMING  8
-#define POSITION 9
+#define EXIT        0
+#define STOP        1
+#define CURRENT     2
+#define TORQUE      3
+#define NULLTORQUE  4
+#define GRAVITY     5
+#define FREEZE      6
+#define IMPEDANCE   7
+#define HOMING      8
+#define POSITION    9
 
 // Exercise FSM
-#define REST 0
-#define WAIT 1
-#define MOVE_UP 2
-#define MOVE_DOWN 3
+#define REST        0
+#define WAIT        1
+#define MOVE_UP     2
+#define MOVE_DOWN   3
 
-#define EXERCISE_START 0
-#define EXERCISE_STOP M_PI/3
+#define EXERCISE_START              0
+#define EXERCISE_STOP               M_PI/3
 
-#define TRIGGER_THRESHOLD    0.1
-#define TRIGGER_REST_TIMEOUT 100 // 100 counter = 1s
-#define TRIGGER_TIMEOUT      150
+#define TRIGGER_TORQUE_THRESHOLD    750
+#define TRIGGER_THRESHOLD           0.1
+#define TRIGGER_REST_TIMEOUT        200 // 100 counter = 1s
+#define TRIGGER_TIMEOUT             400
+#define TRIGGER_POSITION            0
+#define TRIGGER_TORQUE              1
 
-#define SUB_TASK_DURATION 4000
+#define SUB_TASK_DURATION           1000
 
 using namespace std;
 
@@ -93,16 +96,21 @@ public:
     boost_adaptive_control_thread  = boost::thread(&testbed_ros_interface::adaptive_control_thread, this);
 
     std::cout << "ROS interface objects instantiated" << std::endl;
-    interim_status = STOP;
-    interim_impedance_stiffness = 0;
-    interim_impedance_damping = 0;
-    interim_setpoint = 0;
-    interim_setpoint_start = 0;
-    interim_setpoint_final = 0;
-    interim_duration = SUB_TASK_DURATION; // ms
-    interim_elapsed_time = 0;
-    interim_sign = 1;
-    interim_timestamp = 0;
+    interim_status                  = STOP;
+    interim_impedance_stiffness     = 0;
+    interim_impedance_damping       = 0;
+    saved_impedance_stiffness       = 10.0;
+    saved_impedance_damping         = 1.0;
+
+    interim_setpoint                = 0;
+    interim_position                = 0;
+    interim_setpoint_start          = 0;
+    interim_setpoint_final          = 0;
+    interim_duration                = SUB_TASK_DURATION; // ms
+    interim_elapsed_time            = 0;
+    interim_sign                    = 1;
+    interim_timestamp               = 0;
+    trigger_mode                    = TRIGGER_TORQUE;
   }
 
   ~testbed_ros_interface()
@@ -122,13 +130,19 @@ public:
 
   bool      interim_swap_state;
 
+  // Impedance Parameters
   float interim_impedance_damping;
+  float saved_impedance_damping;
+
   float interim_impedance_stiffness;
-  float interim_setpoint;
+  float saved_impedance_stiffness;
+
+  float interim_setpoint = 0;
   float interim_duration; // Sub-task duration
   float interim_amplitude;
   float interim_setpoint_final;
   float interim_setpoint_start;
+  int trigger_mode;
 
   // Status variables
   float interim_position;

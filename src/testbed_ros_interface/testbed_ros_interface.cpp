@@ -321,6 +321,8 @@ void testbed_ros_interface::adaptive_control_thread(){
         {
 
             float interim_time_exercise;
+            float impedance_error, impedance_torque;
+            bool trigger_condition = false;
 
             switch(interim_exercise_status){
 
@@ -328,11 +330,12 @@ void testbed_ros_interface::adaptive_control_thread(){
             case REST:
 
                 // Update Impedance Paramters
-                interim_impedance_stiffness = 30.0;
-                interim_impedance_damping   = 3.0;
+                interim_impedance_stiffness = 50.0;
+                interim_impedance_damping   = 5.0;
 
                 // Increase counter
                 interim_exercise_counter++;
+                //std::cout << "REST: " << interim_exercise_counter <<endl;
 
                 // Timeout Condition
                 if(interim_exercise_counter > TRIGGER_REST_TIMEOUT)
@@ -349,44 +352,74 @@ void testbed_ros_interface::adaptive_control_thread(){
                         interim_setpoint_final = EXERCISE_START;
                     }
 
+                    std::cout << "SETPOINT: " << interim_setpoint_final << endl;
+
                     // Exit State
                     interim_exercise_status = WAIT;
+                    ROS_INFO("Exercise Status: WAIT");
                     interim_exercise_counter = 0;
 
-                    interim_setpoint = interim_position;
+                    //interim_setpoint = interim_position;
                     interim_setpoint_start = interim_position;
 
                     // Update Impedance Parameters
+                    if(trigger_mode == TRIGGER_POSITION){
                     interim_impedance_stiffness = 0.0;
-                    interim_impedance_damping = 0.1;
+                    interim_impedance_damping = 0.5;
+                    }
                 }
+
                 break;
 
             case WAIT:
 
                 // Follow Trajectory
-                interim_setpoint = interim_position;
 
                 // Increase counter
                 interim_exercise_counter++;
+                //std::cout << "WAIT: " << interim_exercise_counter <<endl;
 
+
+                // Define Trigger Mode
+                if(trigger_mode==TRIGGER_POSITION){
+                    interim_setpoint = interim_position;
+                    if( abs(interim_position - interim_setpoint_start) >= TRIGGER_THRESHOLD) trigger_condition = true;
+                }
+                else if(trigger_mode==TRIGGER_TORQUE){
+                   if( abs(interim_torque) >= TRIGGER_TORQUE_THRESHOLD) trigger_condition = true;
+                }
                 // Trigger Condition + Timeout Condition
-                if(abs(interim_position - interim_setpoint_start) >= TRIGGER_THRESHOLD || interim_exercise_counter > TRIGGER_TIMEOUT)
+                if( trigger_condition == true || interim_exercise_counter > TRIGGER_TIMEOUT)
                 {
-                    // Update Impedance Parameters
-                    interim_impedance_stiffness = 5.0;
-                    interim_impedance_damping = 0.5;
+                    impedance_error = (interim_setpoint - interim_position);
+                    impedance_torque = impedance_error*interim_impedance_stiffness;
+
+                    // Update Impedance Paramters
+                    interim_impedance_stiffness = saved_impedance_stiffness;
+                    interim_impedance_damping   = saved_impedance_damping;
+
+                    // Continuity Condition REST-MOVE
+                    interim_setpoint = impedance_torque/interim_impedance_stiffness+interim_position;
 
                     // Save Offset
                     interim_elapsed_time_offset = interim_elapsed_time;
-                    interim_position_offset = interim_position;
+                    interim_position_offset = interim_setpoint;
 
                     // Exit State
-                    interim_exercise_status = MOVE_UP;
+                    if(abs(interim_setpoint_final - EXERCISE_STOP) < 1E-3)
+                    {
+                        interim_exercise_status = MOVE_UP;
+                        ROS_INFO("Exercise Status: MOVE_UP");
+                    }
+                    else if(abs(interim_setpoint_final - EXERCISE_START) < 1E-3)
+                    {
+                        interim_exercise_status = MOVE_DOWN;
+                        ROS_INFO("Exercise Status: MOVE_DOWN");
+                    }
                     interim_exercise_counter = 0;
                 }
 
-            break;
+                break;
 
             case MOVE_UP:
 
@@ -396,10 +429,11 @@ void testbed_ros_interface::adaptive_control_thread(){
                 /**
                 // Tanh(t)
                 // interim_setpoint = interim_position_offset+(interim_setpoint_final-interim_position_offset)/2*(tanh((interim_elapsed_time-interim_elapsed_time_offset)/100-5)+1);
+                **/
 
                 // Sine(2*pi*w*t)
-                //interim_setpoint = 5 + interim_sign*5*sin((2*M_PI*((double)interim_time_exercise++/1000.0))-M_PI/2); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
-                **/
+//                interim_setpoint = interim_setpoint_final/2 + interim_setpoint_final/2*sin((2*M_PI*((double)interim_time_exercise++/1000.0))-M_PI/2); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
+
                 // 5th order
                 interim_setpoint = interim_position_offset+static_cast<float>((interim_setpoint_final-interim_position_offset)*
                                     (10*pow(interim_time_exercise/interim_duration,3)
@@ -407,14 +441,28 @@ void testbed_ros_interface::adaptive_control_thread(){
                                      +6*pow(interim_time_exercise/interim_duration,5)));
 
                 // TODO: Update Stiffness & Damping
+                saved_impedance_stiffness = interim_impedance_stiffness;
+                saved_impedance_damping   = interim_impedance_damping;
+
 
                 // Reach Condition
-                if(interim_position > (interim_setpoint_final - TRIGGER_THRESHOLD/4))
+                if(interim_setpoint > (interim_setpoint_final - 1E-4))
                 {
                     // Exit State
                     interim_exercise_status = REST;
-                    interim_setpoint = interim_position;
+                    ROS_INFO("Exercise Status: REST");
+
+                    impedance_error = (interim_setpoint - interim_position);
+                    impedance_torque = impedance_error*interim_impedance_stiffness;
+
+                    // Update Impedance Paramters
+                    interim_impedance_stiffness = 50.0;
+                    interim_impedance_damping   = 5.0;
+
+                    // Continuity Condition REST-MOVE
+                    interim_setpoint = impedance_torque/interim_impedance_stiffness+interim_position;
                 }
+
 
                 break;
 
@@ -426,10 +474,10 @@ void testbed_ros_interface::adaptive_control_thread(){
                 /**
                 // Tanh(t)
                 // interim_setpoint = interim_position_offset+(interim_setpoint_final-interim_position_offset)/2*(tanh((interim_elapsed_time-interim_elapsed_time_offset)/100-5)+1);
-
-                // Sine(2*pi*w*t)
-                //interim_setpoint = 5 + interim_sign*5*sin((2*M_PI*((double)interim_time_exercise++/1000.0))-M_PI/2); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
                 **/
+                // Sine(2*pi*w*t)
+//                interim_setpoint = interim_setpoint_final/2 + interim_setpoint_final/2*sin((2*M_PI*((double)interim_time_exercise++/1000.0))-M_PI/2); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
+
                 // 5th order
                 interim_setpoint = interim_position_offset+static_cast<float>((interim_setpoint_final-interim_position_offset)*
                                     (10*pow(interim_time_exercise/interim_duration,3)
@@ -437,13 +485,25 @@ void testbed_ros_interface::adaptive_control_thread(){
                                      +6*pow(interim_time_exercise/interim_duration,5)));
 
                 // TODO: Update Stiffness & Damping
+                saved_impedance_stiffness = interim_impedance_stiffness;
+                saved_impedance_damping   = interim_impedance_damping;
 
                 // Reach Condition
-                if(interim_position < (interim_setpoint_final + TRIGGER_THRESHOLD/4))
+                if(interim_setpoint < (interim_setpoint_final + 1E-4))
                 {
                     // Exit State
                     interim_exercise_status = REST;
-                    interim_setpoint = interim_position;
+                    ROS_INFO("Exercise Status: REST");
+
+                    impedance_error = (interim_setpoint - interim_position);
+                    impedance_torque = impedance_error*interim_impedance_stiffness;
+
+                    // Update Impedance Paramters
+                    interim_impedance_stiffness = 50.0;
+                    interim_impedance_damping   = 5.0;
+
+                    // Continuity Condition REST-MOVE
+                    interim_setpoint = impedance_torque/interim_impedance_stiffness+interim_position;
                 }
 
                 break;
@@ -455,6 +515,9 @@ void testbed_ros_interface::adaptive_control_thread(){
 
             // During other modes, update setpoint to interim_position -> Motor follows movement
             interim_setpoint = interim_position;
+            //saved_impedance_stiffness = interim_impedance_stiffness;
+            //saved_impedance_damping   = interim_impedance_damping;
+            interim_exercise_status   = REST;
         }
 
         // ~100 Hz Control Frequency
