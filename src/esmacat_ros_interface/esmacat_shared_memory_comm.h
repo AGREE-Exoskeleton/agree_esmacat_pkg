@@ -20,6 +20,7 @@ class esmacat_shared_memory_comm
         joint_status_t                   joint_status;
         joint_impedance_control_status_t impedance_status;
         joint_controller_configuration_t joint_controller;
+        robot_configuration_t            robot_config;
     };
 
 private:

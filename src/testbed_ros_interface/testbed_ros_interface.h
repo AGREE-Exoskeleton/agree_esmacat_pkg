@@ -19,16 +19,30 @@
 #include "std_msgs/Int64.h"
 
 // EsmaBox FSM
-#define EXIT        0
-#define STOP        1
-#define CURRENT     2
-#define TORQUE      3
-#define NULLTORQUE  4
-#define GRAVITY     5
-#define FREEZE      6
-#define IMPEDANCE   7
-#define HOMING      8
-#define POSITION    9
+#define EXIT    0
+#define STOP    1
+#define CURRENT 2
+#define TORQUE  3
+#define NULLTORQUE 4
+#define GRAVITY 5
+#define FREEZE  6
+#define IMPEDANCE 7
+#define HOMING    8
+#define POSITION  9
+#define WEIGHT    10
+#define IMPEDANCE_EXT 11
+#define TRIGGER   12
+#define ADAPTIVE  13
+
+#define PASSIVE     1001
+#define ACTIVE      1002
+#define ANTIG       1003
+#define TRANSPARENT 1004
+#define CHALLENGING 1005
+#define RESISTIVE   1006
+
+#define HOMING_DONE 108
+#define POSITION_DONE 109
 
 // Exercise FSM
 #define REST        0
@@ -36,8 +50,10 @@
 #define MOVE_UP     2
 #define MOVE_DOWN   3
 
-#define EXERCISE_START              0
-#define EXERCISE_STOP               M_PI/3
+#define EXERCISE_START              -M_PI/2.0
+#define EXERCISE_STOP               M_PI/2
+#define EXERCISE_DURATION           5000.0
+#define EXERCISE_AMPLITUDE          M_PI/2.0
 
 #define TRIGGER_TORQUE_THRESHOLD    750
 #define TRIGGER_THRESHOLD           0.1
@@ -46,7 +62,7 @@
 #define TRIGGER_POSITION            0
 #define TRIGGER_TORQUE              1
 
-#define SUB_TASK_DURATION           1000
+#define SUB_TASK_DURATION           4000
 
 using namespace std;
 
@@ -71,19 +87,10 @@ const string state_labels[] = {
   "IMPEDANCE",
     "HOMING",
     "POSITION",
+    "WEIGHT",
+    "IMPEDANCE_EXTERNAL",
+    "TRIGGER"
 };
-
-//enum RobotState
-//{
-//  EXIT,
-//  STOP,
-//  CURRENT,
-//  TORQUE,
-//  NULLTORQUE,
-//  GRAVITY,
-//  FREEZE,
-//  IMPEDANCE,
-//};
 
 class testbed_ros_interface
 {
@@ -102,6 +109,8 @@ public:
     saved_impedance_stiffness       = 10.0;
     saved_impedance_damping         = 1.0;
 
+    interim_weight_assistance       = 1.0;
+
     interim_setpoint                = 0;
     interim_position                = 0;
     interim_setpoint_start          = 0;
@@ -110,7 +119,13 @@ public:
     interim_elapsed_time            = 0;
     interim_sign                    = 1;
     interim_timestamp               = 0;
-    trigger_mode                    = TRIGGER_TORQUE;
+    trigger_mode                    = TRIGGER_POSITION;
+
+
+    adaptive_impedance_stiffness    = 0.0;
+    adaptive_filtered_error_rad         = 0.0;
+    adaptive_gain                   = 1.0;
+    adaptive_forgetting_factor      = 0.95;
   }
 
   ~testbed_ros_interface()
@@ -137,6 +152,8 @@ public:
   float interim_impedance_stiffness;
   float saved_impedance_stiffness;
 
+  float interim_weight_assistance;
+
   float interim_setpoint = 0;
   float interim_duration; // Sub-task duration
   float interim_amplitude;
@@ -156,6 +173,14 @@ public:
   float interim_score_k;
   float interim_elapsed_time_offset;
   float interim_position_offset;
+
+  // Adaptive Control
+  float adaptive_filtered_error_rad;
+  float adaptive_impedance_stiffness;
+  float adaptive_impedance_damping;
+  float adaptive_gain;
+  float adaptive_forgetting_factor;
+
   int interim_sign;
 
   // Log

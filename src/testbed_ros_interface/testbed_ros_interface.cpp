@@ -27,9 +27,10 @@ void testbed_ros_interface::ROS_publish_thread(){
 
   while (ros::ok()){
 
-    msg.command     = interim_status;
-    msg.damping_d = interim_impedance_damping;
-    msg.stiffness_k = interim_impedance_stiffness;
+    msg.command             = interim_status;
+    msg.damping_d           = interim_impedance_damping;
+    msg.stiffness_k         = interim_impedance_stiffness;
+    msg.weight_assistance   = interim_weight_assistance;
     sine = sin(2*3.1415*(double)interim_roscount++/500.0); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
     msg.setpoint = interim_setpoint; //M_PI/4*sine;                             // setpoint = amplitude * sine wave
 
@@ -124,18 +125,18 @@ void testbed_ros_interface::ROS_command_thread(){
           std::cout << yellow_key << "Already in CURRENT mode" << color_key <<  std::endl;
         }
         break;
-      case 't': case 'T':
-        if (state != TORQUE)
-        {
-          std::cout << green_key << "Quick-swapped to TORQUE mode!" << color_key << std::endl;
-          state = TORQUE;
-          interim_swap_state = true;
-        }
-        else
-        {
-          std::cout << yellow_key << "Already in NULL-TORQUE mode" << color_key <<  std::endl;
-        }
-        break;
+//      case 't': case 'T':
+//        if (state != TORQUE)
+//        {
+//          std::cout << green_key << "Quick-swapped to TORQUE mode!" << color_key << std::endl;
+//          state = TORQUE;
+//          interim_swap_state = true;
+//        }
+//        else
+//        {
+//          std::cout << yellow_key << "Already in NULL-TORQUE mode" << color_key <<  std::endl;
+//        }
+//        break;
 
       case 'g': case 'G':
         if (state != GRAVITY)
@@ -200,6 +201,45 @@ void testbed_ros_interface::ROS_command_thread(){
         }
         break;
 
+      case 'w': case 'W':
+        if (state != WEIGHT)
+        {
+          std::cout << green_key << "Quick-swapped to WEIGHT SUPPORT mode!" << color_key << std::endl;
+          state = WEIGHT;
+          interim_swap_state = true;
+        }
+        else
+        {
+          std::cout << yellow_key << "Already in WEIGHT SUPPORT mode" << color_key <<  std::endl;
+        }
+        break;
+
+      case 'e': case 'E':
+        if (state != IMPEDANCE_EXT)
+        {
+          std::cout << green_key << "Quick-swapped to IMPEDANCE EXTERNAL mode!" << color_key << std::endl;
+          state = IMPEDANCE_EXT;
+          interim_swap_state = true;
+        }
+        else
+        {
+          std::cout << yellow_key << "Already in IMPEDANCE EXTERNAL mode" << color_key <<  std::endl;
+        }
+        break;
+
+      case 't': case 'T':
+        if (state != TRIGGER)
+        {
+          std::cout << green_key << "Quick-swapped to TRIGGER mode!" << color_key << std::endl;
+          state = TRIGGER;
+          interim_swap_state = true;
+        }
+        else
+        {
+          std::cout << yellow_key << "Already in TRIGGER mode" << color_key <<  std::endl;
+        }
+        break;
+
       case 'x': case 'X':
 
         if (state == STOP or state == EXIT)
@@ -212,6 +252,7 @@ void testbed_ros_interface::ROS_command_thread(){
 
         }
         break;
+
       case 'd': case 'D':
         if(c != '\n'){
           std::cout << yellow_key << "Impedance DAMPING change selection:" << color_key << std::endl;
@@ -219,14 +260,14 @@ void testbed_ros_interface::ROS_command_thread(){
           switch(c){
           case '+':
 
-            interim_impedance_damping += 0.1;
+            interim_impedance_damping += 0.25;
             std::cout << green_key << "Impedance DAMPING increased to " << yellow_key << interim_impedance_damping <<  color_key << std::endl;
 
             break;
           case '-':
             if(interim_impedance_damping > 0)
             {
-              interim_impedance_damping -= 0.1;
+              interim_impedance_damping -= 0.25;
               std::cout << green_key << "Impedance DAMPING decreased to " << yellow_key << interim_impedance_damping <<  color_key << std::endl;
             }
             else
@@ -243,7 +284,6 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
 
 
-
       case 'k': case 'K':
         if(c != '\n'){
           std::cout << yellow_key << "Impedance STIFFNESS change selection: " << color_key << std::endl;
@@ -251,14 +291,14 @@ void testbed_ros_interface::ROS_command_thread(){
           switch(c){
           case '+':
 
-            interim_impedance_stiffness += 0.5;
+            interim_impedance_stiffness += 2.5;
             std::cout << green_key << "Impedance STIFFNESS increased to " << yellow_key << interim_impedance_stiffness <<  color_key << std::endl;
 
             break;
           case '-':
             if(interim_impedance_stiffness > 0)
             {
-              interim_impedance_stiffness -= 0.5;
+              interim_impedance_stiffness -= 2.5;
               std::cout << green_key << "Impedance STIFFNESS decreased to " << yellow_key << interim_impedance_stiffness <<  color_key << std::endl;
             }
             else
@@ -273,6 +313,36 @@ void testbed_ros_interface::ROS_command_thread(){
           }
         }
         break;
+
+      case 'a': case 'A':
+          if(c != '\n'){
+            std::cout << yellow_key << "WEIGHT Assistance change selection: " << color_key << std::endl;
+            c = cin.get();
+            switch(c){
+            case '+':
+
+              interim_weight_assistance += 0.05;
+              std::cout << green_key << "WEIGHT Assistance increased to " << yellow_key << interim_weight_assistance <<  color_key << std::endl;
+
+              break;
+            case '-':
+              if(interim_weight_assistance > -1.0 && interim_weight_assistance < 2.0 )
+              {
+                interim_weight_assistance -= 0.05;
+                std::cout << green_key << "WEIGHT Assistance decreased to " << yellow_key << interim_weight_assistance <<  color_key << std::endl;
+              }
+              else
+              {
+                ROS_WARN("WEIGHT Assistance not changed: %f", interim_weight_assistance);
+              }
+              break;
+            default:
+              ROS_WARN("WEIGHT Assistance not changed: %f", interim_weight_assistance);
+
+              break;
+            }
+          }
+          break;
 
       case ' ':
         print_command_keys();
@@ -314,13 +384,25 @@ void testbed_ros_interface::adaptive_control_thread(){
     //TODO: Change initial interim_setpoint
     //interim_setpoint = interim_position;
 
+    float P0,P1,P2,P3,P4,P5;
+
+    P0 = EXERCISE_START;
+    P2 = 0.0;
+    P3 = 3.0; //3rd Order
+    P4 = P2+EXERCISE_DURATION;
+    P5 = 3.0; //3rd Order
+    P1 = EXERCISE_AMPLITUDE/pow(EXERCISE_DURATION/2,(P3+P5));
+
+
     while (ros::ok()){
 
+        float interim_time_exercise;
+//        interim_elapsed_time += 10;
+
         // State Impedance - used for testbed tests
-        if(interim_status == IMPEDANCE)
+        if(interim_status == TRIGGER)
         {
 
-            float interim_time_exercise;
             float impedance_error, impedance_torque;
             bool trigger_condition = false;
 
@@ -511,16 +593,90 @@ void testbed_ros_interface::adaptive_control_thread(){
 
         }
 
-        else{
+        else if(interim_status == ADAPTIVE){
+
+            // Compute time variable
+            interim_time_exercise = (interim_elapsed_time-interim_elapsed_time_offset);
+
+            // Filtered Derivative Error (Exponential Low-Pass Filter)
+            // Filtered Velocity (Exponential Low-Pass Filter)
+            // y(k) = (1-a) * y(k-1) + a * x(k)
+            double lambda = 0.0005;
+            adaptive_filtered_error_rad = lambda*abs(interim_setpoint-interim_position) + (1-lambda)*(adaptive_filtered_error_rad);
+
+            adaptive_impedance_stiffness = adaptive_gain*adaptive_filtered_error_rad + adaptive_forgetting_factor*adaptive_impedance_stiffness;
+
+            interim_setpoint = interim_position_offset + M_PI/4*sin(2*M_PI*(double)interim_time_exercise++/10000.0);
+            interim_impedance_stiffness = adaptive_impedance_stiffness;
+            interim_impedance_damping = interim_impedance_stiffness/5;
+        }
+        else if(interim_status == IMPEDANCE_EXT){
+            // interim_setpoint = last_interim_position
+            // interim_impedance = changed by terminal
+            // interim_stiffness = changed by terminal
+
+            if(interim_time_exercise > EXERCISE_DURATION){
+                interim_elapsed_time_offset = interim_elapsed_time;
+            }
+
+            // Compute time variable
+            interim_time_exercise = (interim_elapsed_time-interim_elapsed_time_offset);
+
+            // Beta-Function
+            interim_setpoint = P0+P1*pow((interim_time_exercise-P2),P3)*pow((P4-interim_time_exercise),P5);
+
+
+        }
+        else if(interim_status == IMPEDANCE){
+            // interim_setpoint = computed in RT-machine
+            interim_setpoint = interim_position;
+            interim_impedance_stiffness = 5.0;
+            interim_impedance_damping = 0.5;
+        }
+
+        // TODO: TUNE FREEZE PARAMETERS
+        else if(interim_status == FREEZE){
+            // interim_setpoint = last position
+            interim_impedance_stiffness = 15.0;
+            interim_impedance_damping = 5.0;
+        }
+        else if(interim_status == GRAVITY){
+            // interim_setpoint = computed in RT-machine
+            interim_impedance_stiffness = 0.0;
+//            interim_impedance_damping = 1.0;
+        }
+        else if(interim_status == WEIGHT){
+            // interim_setpoint = computed in RT-machine
+            //interim_impedance_stiffness = 0.0;
+//            interim_impedance_damping = 1.0;
+        }
+        else if(interim_status == POSITION){
+            interim_setpoint = -M_PI/2.0;
+            interim_impedance_stiffness = 5.0;
+            interim_impedance_damping = 0.5;
+        }
+        else {
 
             // During other modes, update setpoint to interim_position -> Motor follows movement
             interim_setpoint = interim_position;
             //saved_impedance_stiffness = interim_impedance_stiffness;
             //saved_impedance_damping   = interim_impedance_damping;
             interim_exercise_status   = REST;
+
+            // Save Offset
+            interim_elapsed_time_offset = interim_elapsed_time;
+            interim_position_offset = interim_setpoint;
+            interim_impedance_stiffness = 50.0;
+            interim_impedance_damping = 5.0;
+
+            // Clear adaptive errors
+            adaptive_filtered_error_rad         = 0.0;
+            adaptive_impedance_stiffness        = 5.0;
+            adaptive_impedance_damping          = 0.5;
         }
 
         // ~100 Hz Control Frequency
+        // TODO: CLOCKTIME
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -534,16 +690,24 @@ void testbed_ros_interface::print_command_keys()
   std::cout << blue_key << "\'x\'" << color_key << ": EXIT" << "\n";
   std::cout << blue_key << "\'s\'" << color_key << ": STOP mode"<< "\n";
   std::cout << blue_key << "\'c\'" << color_key << ": CURRENT mode"<< "\n";
-  std::cout << blue_key << "\'t\'" << color_key << ": TORQUE mode"<< "\n";
+//  std::cout << blue_key << "\'t\'" << color_key << ": TORQUE mode"<< "\n";
   std::cout << blue_key << "\'n\'" << color_key << ": NULL-TORQUE mode" << "\n";
   std::cout << blue_key << "\'g\'" << color_key << ": GRAVITY mode"<< "\n";
   std::cout << blue_key << "\'f\'" << color_key << ": FREEZE mode"<< "\n";
   std::cout << blue_key << "\'i\'" << color_key << ": IMPEDANCE mode"<< "\n";
+  std::cout << blue_key << "\'h\'" << color_key << ": HOMING mode"<< "\n";
+  std::cout << blue_key << "\'p\'" << color_key << ": POSITION mode"<< "\n";
+  std::cout << blue_key << "\'w\'" << color_key << ": WEIGHT mode"<< "\n";
+  std::cout << blue_key << "\'e\'" << color_key << ": IMPEDANCE EXTERNAL mode"<< "\n";
+  std::cout << blue_key << "\'t\'" << color_key << ": TRIGGER mode"<< "\n";
+  cout << endl;
   std::cout << blue_key << "\'d+\'" << color_key << ": increase DAMPING"<< "\n";
   std::cout << blue_key << "\'d-\'" << color_key << ": decrease DAMPING"<< "\n";
   std::cout << blue_key << "\'k+\'" << color_key << ": increase STIFFNESS"<< "\n";
   std::cout << blue_key << "\'k-\'" << color_key << ": decrease STIFFNESS"<< "\n";
-
+  std::cout << blue_key << "\'a+\'" << color_key << ": increase WEIGHT assistance"<< "\n";
+  std::cout << blue_key << "\'a-\'" << color_key << ": decrease WEIGHT assistance"<< "\n";
+  cout << endl;
   std::cout << blue_key << "\'ENTER\'" << color_key << ": SHOW current settings and command keys\n"<< "\n";
 }
 

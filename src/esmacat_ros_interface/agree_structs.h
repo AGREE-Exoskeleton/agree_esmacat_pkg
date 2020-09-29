@@ -191,4 +191,20 @@ struct joint_controller_configuration_t
     }
 };
 
+struct robot_configuration_t {
+
+    float subject_mass_kg;
+    float subject_heigh_m;
+    float weight_compensation_level;
+
+    /** Initializes all the parameters of the torque, position
+    and impedance control loops to 0 */
+    robot_configuration_t()
+    {
+        subject_mass_kg = 70;
+        subject_heigh_m = 1.80;
+        weight_compensation_level = 1.00;
+    }
+};
+
 #endif // AGREE_STRUCTS_H

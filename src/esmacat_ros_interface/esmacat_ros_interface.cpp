@@ -27,8 +27,6 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     //    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
     //    command.state = interim_state
 
-    // TODO: INCREASE ELAPSED TIME ON RT-CODE
-    // esmacat_sm.data->elapsed_time++;
     msg.elapsed_time    = esmacat_sm.data->elapsed_time;
     msg.status          = esmacat_sm.data->status;
 
@@ -92,6 +90,7 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   esmacat_sm.data->joint_controller.impedance_control_k_gain_mNm_per_rad = msg.stiffness_k;
   esmacat_sm.data->joint_controller.impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d;
   esmacat_sm.data->impedance_status.impedance_control_setpoint_rad = msg.setpoint;
+  esmacat_sm.data->robot_config.weight_compensation_level = msg.weight_assistance;
 
   prev_command   = msg.command;
   prev_stiffness = msg.stiffness_k;
