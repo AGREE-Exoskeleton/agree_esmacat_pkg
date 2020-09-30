@@ -8,18 +8,21 @@
 #include <iostream>
 #include "agree_structs.h"
 
+#define N_DOFS_MAX 5
 
 class esmacat_shared_memory_comm
 {
     struct shared_memory_packet {
         bool            stop = false;
+        /** Elapsed time in ms */
         double          elapsed_time = 0;
+        /** Loop counter */
         uint64_t        loop_cnt    = 0;
         uint64_t        status      = 1;
         uint64_t        command     = 1;
-        joint_status_t                   joint_status;
-        joint_impedance_control_status_t impedance_status;
-        joint_controller_configuration_t joint_controller;
+        joint_status_t                   joint_status[N_DOFS_MAX];
+        joint_impedance_control_status_t joint_impedance_control_status[N_DOFS_MAX];
+        joint_controller_configuration_t joint_impedance_control_config[N_DOFS_MAX];
         robot_configuration_t            robot_config;
     };
 

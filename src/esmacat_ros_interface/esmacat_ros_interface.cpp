@@ -31,20 +31,20 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     msg.status          = esmacat_sm.data->status;
 
     msg.encoder_position.clear();
-    msg.encoder_position.push_back(esmacat_sm.data->joint_status.incremental_encoder_position_radians);
+    msg.encoder_position.push_back(esmacat_sm.data->joint_status[0].incremental_encoder_position_radians);
 
     msg.encoder_speed.clear();
-    msg.encoder_speed.push_back(esmacat_sm.data->joint_status.velocity_rad_per_s);
+    msg.encoder_speed.push_back(esmacat_sm.data->joint_status[0].velocity_rad_per_s);
 
     msg.loadcell_torque.clear();
-    msg.loadcell_torque.push_back(esmacat_sm.data->joint_status.loadcell_torque_mNm);
+    msg.loadcell_torque.push_back(esmacat_sm.data->joint_status[0].loadcell_torque_mNm);
 
 
     publisher.publish(msg);
 
     loop_rate.sleep();
     interim_roscount++;
-    if (esmacat_sm.data->stop)
+    if (esmacat_sm.data->status == 0)
     {
       ROS_INFO("AGREE ROS Interface shutting down..");
       ros::shutdown();
@@ -87,9 +87,9 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 
   // Save data from ROS message to shared memory
   esmacat_sm.data->command =  msg.command;
-  esmacat_sm.data->joint_controller.impedance_control_k_gain_mNm_per_rad = msg.stiffness_k;
-  esmacat_sm.data->joint_controller.impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d;
-  esmacat_sm.data->impedance_status.impedance_control_setpoint_rad = msg.setpoint;
+  esmacat_sm.data->joint_impedance_control_config[0].impedance_control_k_gain_mNm_per_rad = msg.stiffness_k;
+  esmacat_sm.data->joint_impedance_control_config[0].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d;
+  esmacat_sm.data->joint_impedance_control_status[0].impedance_control_setpoint_rad = msg.setpoint;
   esmacat_sm.data->robot_config.weight_compensation_level = msg.weight_assistance;
 
   prev_command   = msg.command;
