@@ -658,8 +658,8 @@ void testbed_ros_interface::Control_thread(){
         }
         else if(interim_command == POSITION){
             interim_setpoint = -M_PI/2.0;
-            interim_impedance_stiffness = 5.0;
-            interim_impedance_damping = 0.5;
+//            interim_impedance_stiffness = 5.0;
+//            interim_impedance_damping = 0.5;
         }
         else {
 
@@ -672,8 +672,8 @@ void testbed_ros_interface::Control_thread(){
             // Save Offset
             interim_elapsed_time_offset = interim_elapsed_time;
             interim_position_offset = interim_setpoint;
-            interim_impedance_stiffness = 50.0;
-            interim_impedance_damping = 5.0;
+            interim_impedance_stiffness = 5.0;
+            interim_impedance_damping = 0.5;
 
             // Clear adaptive errors
             adaptive_filtered_error_rad         = 0.0;
