@@ -27,17 +27,24 @@ void testbed_ros_interface::ROS_publish_thread(){
 
   while (ros::ok()){
 
-    msg.command             = interim_status;
-    msg.damping_d           = interim_impedance_damping;
-    msg.stiffness_k         = interim_impedance_stiffness;
-    msg.weight_assistance   = interim_weight_assistance;
-    sine = sin(2*3.1415*(double)interim_roscount++/500.0); //  sine wave = sin(2*pi*f*t/1000) = sin(2*3.1415*2Hz*timestamp/1kHz)
-    msg.setpoint = interim_setpoint; //M_PI/4*sine;                             // setpoint = amplitude * sine wave
+      msg.command             = interim_command;
+      msg.weight_assistance   = interim_weight_assistance;
+
+      msg.setpoint.clear();
+      msg.damping_d.clear();
+      msg.stiffness_k.clear();
+
+      for(int joint_index=0;joint_index<N_DOFS_MAX;joint_index++){
+          msg.setpoint.push_back(interim_setpoint);
+          msg.damping_d.push_back(interim_impedance_damping);
+          msg.stiffness_k.push_back(interim_impedance_stiffness);
+      }
+
 
     // Compute timestamp
     clock_gettime( CLOCK_REALTIME, &temp);
     timestamp = diff(t0,temp);
-    msg.timestamp = (float)(timestamp.tv_sec);
+    msg.timestamp = (float)(timestamp.tv_nsec/1000.0);
 
     pub_esmacat_write.publish(msg);
 
@@ -74,7 +81,7 @@ void testbed_ros_interface::ROS_command_thread(){
   //Initialize Robot status
   char c;
   string inputString;
-  uint8_t state(STOP);
+  uint8_t commanded_state(STOP);
 
 
   print_command_keys();
@@ -89,10 +96,10 @@ void testbed_ros_interface::ROS_command_thread(){
       switch(c){
 
       case 's': case 'S':
-        if (state != STOP)
+        if (commanded_state != STOP)
         {
           std::cout << green_key << "Quick-swapped to STOP mode!" << color_key << std::endl;
-          state = STOP;
+          commanded_state = STOP;
           interim_swap_state = true;
         }
         else
@@ -102,10 +109,10 @@ void testbed_ros_interface::ROS_command_thread(){
         }
         break;
       case 'n': case 'N':
-        if (state != NULLTORQUE)
+        if (commanded_state != NULLTORQUE)
         {
           std::cout << green_key << "Quick-swapped to NULL-TORQUE mode!" << color_key << std::endl;
-          state = NULLTORQUE;
+          commanded_state = NULLTORQUE;
           interim_swap_state = true;
         }
         else
@@ -114,10 +121,10 @@ void testbed_ros_interface::ROS_command_thread(){
         }
         break;
       case 'c': case 'C':
-        if (state != CURRENT)
+        if (commanded_state != CURRENT)
         {
           std::cout << green_key << "Quick-swapped to CURRENT mode!" << color_key << std::endl;
-          state = CURRENT;
+          commanded_state = CURRENT;
           interim_swap_state = true;
         }
         else
@@ -139,10 +146,10 @@ void testbed_ros_interface::ROS_command_thread(){
 //        break;
 
       case 'g': case 'G':
-        if (state != GRAVITY)
+        if (commanded_state != GRAVITY)
         {
           std::cout << green_key << "Quick-swapped to GRAVITY mode!" << color_key << std::endl;
-          state = GRAVITY;
+          commanded_state = GRAVITY;
           interim_swap_state = true;
         }
         else
@@ -151,10 +158,10 @@ void testbed_ros_interface::ROS_command_thread(){
         }
         break;
       case 'f': case 'F':
-        if (state != FREEZE)
+        if (commanded_state != FREEZE)
         {
           std::cout << green_key << "Quick-swapped to FREEZE mode!" << color_key << std::endl;
-          state = FREEZE;
+          commanded_state = FREEZE;
           interim_swap_state = true;
         }
         else
@@ -163,10 +170,10 @@ void testbed_ros_interface::ROS_command_thread(){
         }
         break;
       case 'i': case 'I':
-        if (state != IMPEDANCE)
+        if (commanded_state != IMPEDANCE)
         {
           std::cout << green_key << "Quick-swapped to IMPEDANCE mode!" << color_key << std::endl;
-          state = IMPEDANCE;
+          commanded_state = IMPEDANCE;
           interim_swap_state = true;
         }
         else
@@ -176,10 +183,10 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
 
       case 'p': case 'P':
-        if (state != POSITION)
+        if (commanded_state != POSITION)
         {
           std::cout << green_key << "Quick-swapped to POSITION mode!" << color_key << std::endl;
-          state = POSITION;
+          commanded_state = POSITION;
           interim_swap_state = true;
         }
         else
@@ -189,10 +196,10 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
 
       case 'h': case 'H':
-        if (state != HOMING)
+        if (commanded_state != HOMING)
         {
           std::cout << green_key << "Quick-swapped to HOMING mode!" << color_key << std::endl;
-          state = HOMING;
+          commanded_state = HOMING;
           interim_swap_state = true;
         }
         else
@@ -202,10 +209,10 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
 
       case 'w': case 'W':
-        if (state != WEIGHT)
+        if (commanded_state != WEIGHT)
         {
           std::cout << green_key << "Quick-swapped to WEIGHT SUPPORT mode!" << color_key << std::endl;
-          state = WEIGHT;
+          commanded_state = WEIGHT;
           interim_swap_state = true;
         }
         else
@@ -215,10 +222,10 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
 
       case 'e': case 'E':
-        if (state != IMPEDANCE_EXT)
+        if (commanded_state != IMPEDANCE_EXT)
         {
           std::cout << green_key << "Quick-swapped to IMPEDANCE EXTERNAL mode!" << color_key << std::endl;
-          state = IMPEDANCE_EXT;
+          commanded_state = IMPEDANCE_EXT;
           interim_swap_state = true;
         }
         else
@@ -228,10 +235,10 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
 
       case 't': case 'T':
-        if (state != TRIGGER)
+        if (commanded_state != TRIGGER)
         {
           std::cout << green_key << "Quick-swapped to TRIGGER mode!" << color_key << std::endl;
-          state = TRIGGER;
+          commanded_state = TRIGGER;
           interim_swap_state = true;
         }
         else
@@ -242,9 +249,9 @@ void testbed_ros_interface::ROS_command_thread(){
 
       case 'x': case 'X':
 
-        if (state == STOP or state == EXIT)
+        if (commanded_state == STOP or commanded_state == EXIT)
         {   interim_swap_state = true;
-          state = EXIT;
+          commanded_state = EXIT;
           std::cout << yellow_key << "Ending program - no more inputs..." << color_key << std::endl;
         }
         else {
@@ -352,10 +359,9 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
       }
 
+      interim_command = (uint64_t) commanded_state;
 
-      interim_status = (uint64_t) state;
-
-      if(!interim_status) {
+      if(!interim_command) {
           closefile();
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
           ros::shutdown();
@@ -368,7 +374,7 @@ void testbed_ros_interface::ROS_command_thread(){
     }
     else
     {
-      std::cout << yellow_key << state_labels[state] << color_key << " is the state currently active" << std::endl << std::endl;
+      std::cout << yellow_key << state_labels[commanded_state] << color_key << " is the state currently active" << std::endl << std::endl;
     } // else
 
   } // while
@@ -379,7 +385,7 @@ void testbed_ros_interface::ROS_command_thread(){
 /* Adaptive Control Thread */
 /***************************/
 
-void testbed_ros_interface::adaptive_control_thread(){
+void testbed_ros_interface::Control_thread(){
 
     //TODO: Change initial interim_setpoint
     //interim_setpoint = interim_position;
@@ -400,7 +406,7 @@ void testbed_ros_interface::adaptive_control_thread(){
 //        interim_elapsed_time += 10;
 
         // State Impedance - used for testbed tests
-        if(interim_status == TRIGGER)
+        if(interim_command == TRIGGER)
         {
 
             float impedance_error, impedance_torque;
@@ -593,7 +599,7 @@ void testbed_ros_interface::adaptive_control_thread(){
 
         }
 
-        else if(interim_status == ADAPTIVE){
+        else if(interim_command == ADAPTIVE){
 
             // Compute time variable
             interim_time_exercise = (interim_elapsed_time-interim_elapsed_time_offset);
@@ -610,7 +616,7 @@ void testbed_ros_interface::adaptive_control_thread(){
             interim_impedance_stiffness = adaptive_impedance_stiffness;
             interim_impedance_damping = interim_impedance_stiffness/5;
         }
-        else if(interim_status == IMPEDANCE_EXT){
+        else if(interim_command == IMPEDANCE_EXT){
             // interim_setpoint = last_interim_position
             // interim_impedance = changed by terminal
             // interim_stiffness = changed by terminal
@@ -627,7 +633,7 @@ void testbed_ros_interface::adaptive_control_thread(){
 
 
         }
-        else if(interim_status == IMPEDANCE){
+        else if(interim_command == IMPEDANCE){
             // interim_setpoint = computed in RT-machine
             interim_setpoint = interim_position;
             interim_impedance_stiffness = 5.0;
@@ -635,22 +641,22 @@ void testbed_ros_interface::adaptive_control_thread(){
         }
 
         // TODO: TUNE FREEZE PARAMETERS
-        else if(interim_status == FREEZE){
+        else if(interim_command == FREEZE){
             // interim_setpoint = last position
-            interim_impedance_stiffness = 15.0;
+            interim_impedance_stiffness = 45.0;
             interim_impedance_damping = 5.0;
         }
-        else if(interim_status == GRAVITY){
+        else if(interim_command == GRAVITY){
             // interim_setpoint = computed in RT-machine
             interim_impedance_stiffness = 0.0;
-//            interim_impedance_damping = 1.0;
+            interim_impedance_damping = 0.1;
         }
-        else if(interim_status == WEIGHT){
+        else if(interim_command == WEIGHT){
             // interim_setpoint = computed in RT-machine
-            //interim_impedance_stiffness = 0.0;
-//            interim_impedance_damping = 1.0;
+            interim_impedance_stiffness = 0.0;
+            interim_impedance_damping = 0.1;
         }
-        else if(interim_status == POSITION){
+        else if(interim_command == POSITION){
             interim_setpoint = -M_PI/2.0;
             interim_impedance_stiffness = 5.0;
             interim_impedance_damping = 0.5;
@@ -713,9 +719,10 @@ void testbed_ros_interface::print_command_keys()
 
 void testbed_ros_interface::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_status msg)
 {
-    interim_position = msg.encoder_position[0];
-    interim_speed    = msg.encoder_speed[0];
-    interim_torque   = msg.loadcell_torque[0];
+    interim_position = msg.joint_position[0];
+    interim_speed    = msg.joint_velocity[0];
+    interim_torque   = msg.joint_torque[0];
+
     interim_elapsed_time = msg.elapsed_time;
   //Display data from hard real-time loop to the the terminal.
   if( (msg.elapsed_time)%100==0){
@@ -779,7 +786,7 @@ void testbed_ros_interface::write2file(){
     log << endl
 
             << interim_elapsed_time << ","
-            << interim_status << ","
+            << interim_command << ","
             << interim_position << ","
             << interim_speed << ","
             << interim_torque << ","

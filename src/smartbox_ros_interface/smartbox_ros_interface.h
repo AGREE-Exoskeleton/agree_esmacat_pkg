@@ -26,6 +26,8 @@
 #define HOMING  8
 #define POSITION 9
 
+#define N_DOFS_MAX 5
+
 using namespace std;
 
 // Text Color Identifiers

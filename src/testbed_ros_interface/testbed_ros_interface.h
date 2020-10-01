@@ -64,6 +64,8 @@
 
 #define SUB_TASK_DURATION           4000
 
+#define N_DOFS_MAX                  5
+
 using namespace std;
 
 // Text Color Identifiers
@@ -100,10 +102,10 @@ public:
     boost_ROS_publish_thread    = boost::thread(&testbed_ros_interface::ROS_publish_thread, this);
     boost_ROS_subscribe_thread  = boost::thread(&testbed_ros_interface::ROS_subscribe_thread, this);
     boost_ROS_command_thread  = boost::thread(&testbed_ros_interface::ROS_command_thread, this);
-    boost_adaptive_control_thread  = boost::thread(&testbed_ros_interface::adaptive_control_thread, this);
+    boost_adaptive_control_thread  = boost::thread(&testbed_ros_interface::Control_thread, this);
 
     std::cout << "ROS interface objects instantiated" << std::endl;
-    interim_status                  = STOP;
+    interim_command                  = STOP;
     interim_impedance_stiffness     = 0;
     interim_impedance_damping       = 0;
     saved_impedance_stiffness       = 10.0;
@@ -139,7 +141,7 @@ public:
   }
 
   // Command variables
-  uint64_t interim_status;
+  uint64_t interim_command;
   uint64_t interim_exercise_status = REST;
   float    interim_exercise_counter = 0;
 
@@ -199,7 +201,7 @@ private:
   void ROS_subscribe_thread();
   void ROS_publish_thread();
   void ROS_command_thread();
-  void adaptive_control_thread();
+  void Control_thread();
   void ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_status msg);
 
   void print_command_keys();
