@@ -91,9 +91,9 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   esmacat_sm.data->robot_config.weight_compensation_level   = msg.weight_assistance;
 
   for(int joint_index = 0; joint_index < 5; joint_index++){
-      esmacat_sm.data->joint_impedance_control_config[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];
-      esmacat_sm.data->joint_impedance_control_config[joint_index].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d[joint_index];
-      esmacat_sm.data->joint_impedance_control_status[joint_index].impedance_control_setpoint_rad               = msg.setpoint[joint_index];
+      esmacat_sm.data->joint_task_control_parameters[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];
+      esmacat_sm.data->joint_task_control_parameters[joint_index].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d[joint_index];
+      esmacat_sm.data->joint_task_control_parameters[joint_index].impedance_control_setpoint_rad               = msg.setpoint[joint_index];
   }
 
   prev_command   = msg.command;

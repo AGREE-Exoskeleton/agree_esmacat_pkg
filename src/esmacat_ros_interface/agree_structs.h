@@ -122,8 +122,6 @@ struct joint_status_t
 
 };
 
-/** Holds the configuration parameters for the torque, position and
-impedance control loops*/
 struct joint_controller_configuration_t
 {
     /** Proportional gain for the torque control loop */
@@ -191,6 +189,100 @@ struct joint_controller_configuration_t
     }
 };
 
+struct joint_task_control_command_t{
+    /** Proportional gain for the impedance control loop */
+    float impedance_control_k_gain_mNm_per_rad;
+    /** Derivative gain for the impedance control loop */
+    float impedance_control_d_gain_mNm_per_rad_per_sec;
+    /** Position setpoint for impedance control in radians */
+    float impedance_control_setpoint_rad;
+
+    joint_task_control_command_t()
+    {
+        impedance_control_k_gain_mNm_per_rad = 0;
+        impedance_control_d_gain_mNm_per_rad_per_sec = 0;
+        impedance_control_setpoint_rad = 0;
+    }
+};
+
+struct joint_motor_configuration_t
+{
+    /** Index of the joint */
+    int joint_index;
+
+    /** Resolution of the incremental encoder in counts per turn */
+    int32_t incremental_encoder_resolution_cpt;
+
+    /** Sign of the readings from the incremental encoder with positive position */
+    int incremental_encoder_sign;
+
+    /** Offset of the incremental encoder in counts */
+    int32_t incremental_encoder_offset_counts;
+
+    /** Loadcell fullscale reading in inch-lbs */
+    float loadcell_fullscale_lbs;
+
+    /** Gear ratio of the motor (output shaft to motor shaft) */
+    float gear_ratio;
+
+    /** Gear ratio of the joint transmission (output joint to output shaft) */
+    float   gear_ratio_transmission;
+
+    /** Torque constant of the motor in milli-Nm per mA */
+    float torque_constant_mNm_per_mA;
+
+    /** Factor that translates the loadcell reading in mV to load reading in milli-Nm */
+    float loadcell_calibration_mV_to_mNm;
+
+    /** Offset to be applied to the loadcell reading in mNm */
+    float loadcell_offset_mNm;
+
+    /** Gear power efficiency of the motor (output shaft to motor shaft) */
+    float gear_power_efficiency;
+
+    /** The setpoint for the ESCON is normalized, this is the conversion factor to
+     * convert the setpoint back to mA*/
+    float current_conversion_factor_mA_to_setpoint;
+
+    /** Hard stop position for the joint in positive direction in degrees */
+    float positive_hard_stop_position_degrees;
+
+    /** Hard stop position for the joint in negative direction in degrees */
+    float negative_hard_stop_position_degrees;
+
+    /** Sign of the readings with positive load */
+    int loadcell_sign;
+
+    /** Sign for the current setpoint for the ESCON */
+    int desired_torque_sign;
+
+    /** Default initialization of the configuration paramters for the joint actuator */
+    joint_motor_configuration_t()
+    {
+        joint_index         = 0;
+
+        loadcell_fullscale_lbs = 0;
+        loadcell_calibration_mV_to_mNm = 0;
+        torque_constant_mNm_per_mA = 0;
+        gear_ratio = 0;
+        gear_ratio_transmission = 0;
+        gear_power_efficiency = 0;
+        current_conversion_factor_mA_to_setpoint = 0;
+
+        incremental_encoder_resolution_cpt = 2048;
+        incremental_encoder_offset_counts  = 0;
+        incremental_encoder_sign           = 1;
+
+
+
+        positive_hard_stop_position_degrees = 180;
+        negative_hard_stop_position_degrees = -180;
+
+        loadcell_sign = 1;
+        desired_torque_sign = 1;
+    }
+};
+
 struct robot_configuration_t {
 
     float subject_mass_kg;
@@ -206,5 +298,4 @@ struct robot_configuration_t {
         weight_compensation_level = 1.00;
     }
 };
-
 #endif // AGREE_STRUCTS_H

@@ -44,7 +44,7 @@ void testbed_ros_interface::ROS_publish_thread(){
     // Compute timestamp
     clock_gettime( CLOCK_REALTIME, &temp);
     timestamp = diff(t0,temp);
-    msg.timestamp = (float)(timestamp.tv_nsec/1000.0);
+    msg.timestamp = (float)(timestamp.tv_sec);
 
     pub_esmacat_write.publish(msg);
 
@@ -385,7 +385,7 @@ void testbed_ros_interface::ROS_command_thread(){
 /* Adaptive Control Thread */
 /***************************/
 
-void testbed_ros_interface::Control_thread(){
+void testbed_ros_interface::control_thread(){
 
     //TODO: Change initial interim_setpoint
     //interim_setpoint = interim_position;
@@ -403,7 +403,159 @@ void testbed_ros_interface::Control_thread(){
     while (ros::ok()){
 
         float interim_time_exercise;
-//        interim_elapsed_time += 10;
+        float interim_setpoint_exercise;
+
+        // Compute time variable
+        interim_time_exercise = (interim_elapsed_time-interim_elapsed_time_offset);
+
+        // Beta-Function
+        interim_setpoint_exercise = P0+P1*pow((interim_time_exercise-P2),P3)*pow((P4-interim_time_exercise),P5);
+
+        switch(interim_command){
+
+        /***************************/
+        /*        FREEZE           */
+        /***************************/
+
+        case FREEZE:
+            if(interim_swap_state){
+                // interim_setpoint = last position
+                interim_setpoint = interim_position;
+                // Stiffness = 60 Nm/rad
+                interim_impedance_stiffness = 60.0;
+                // Damping = 15 Nm/rad^2 -> derived from stiffness
+                interim_impedance_damping = STIFFNESS_TO_DAMPING_RATIO*interim_impedance_stiffness;
+                // Exit first iteration
+                interim_swap_state = false;
+            }
+            // Damping is derived from stiffness
+            interim_impedance_damping = STIFFNESS_TO_DAMPING_RATIO*interim_impedance_stiffness;
+
+            break;
+
+        /***************************/
+        /*    GO HOME POSITION     */
+        /***************************/
+
+        case POSITION:
+
+            // First iteration:
+            if(interim_swap_state){
+                // interim time offset = last time
+                interim_elapsed_time_offset = interim_elapsed_time;
+                // Stiffness = 10 Nm/rad
+                interim_impedance_stiffness = 10.0;
+                // Damping = 2.5 Nm/rad^2 -> derived from stiffness
+                interim_impedance_damping = STIFFNESS_TO_DAMPING_RATIO*interim_impedance_stiffness;
+                // Assistance = 75%
+                interim_weight_assistance = 0.75;
+                // Exit first iteration
+                interim_swap_state = false;
+            }
+            // interim setpoint = Start position for exercise
+            interim_setpoint = EXERCISE_START;
+
+            break;
+
+
+        case IMPEDANCE:
+            if(interim_swap_state){
+                // Stiffness = 60 Nm/rad
+                interim_impedance_stiffness = 5.0;
+                // Damping = 15 Nm/rad^2 -> derived from stiffness
+                interim_impedance_damping = STIFFNESS_TO_DAMPING_RATIO*interim_impedance_stiffness;
+                // Exit first iteration
+                interim_swap_state = false;
+            }
+            break;
+
+        /*******************************/
+        /* IMPEDANCE EXTERNAL SETPOINT */
+        /*******************************/
+
+        case IMPEDANCE_EXT:
+
+            if(interim_swap_state){
+                // interim_setpoint = last position
+                interim_setpoint = interim_position;
+                // Stiffness = 60 Nm/rad
+                interim_impedance_stiffness = 5.0;
+                // Damping = 15 Nm/rad^2 -> derived from stiffness
+                interim_impedance_damping = STIFFNESS_TO_DAMPING_RATIO*interim_impedance_stiffness;
+                // Time offset = last time
+                interim_elapsed_time_offset = interim_elapsed_time;
+                // Exit first iteration
+                interim_swap_state = false;
+            }
+
+                // interim_impedance = changed by terminal
+                // interim_stiffness = changed by terminal
+
+                if(interim_time_exercise > EXERCISE_DURATION){
+                    interim_elapsed_time_offset = interim_elapsed_time;
+                }
+
+                // Beta-Function
+                interim_setpoint = interim_setpoint_exercise;
+
+
+            break;
+
+
+        /***************************/
+        /*         WEIGHT          */
+        /***************************/
+
+        case WEIGHT:
+
+            // First iteration:
+            if(interim_swap_state){
+
+                // interim time offset = last time
+                interim_elapsed_time_offset = interim_elapsed_time;
+                // Stiffness = 0 Nm/rad
+                interim_impedance_stiffness = 0.0;
+                // Damping = 0.1 Nm/rad^2
+                interim_impedance_damping = 0.1;
+                // Assistance = 75%
+                interim_weight_assistance = 0.75;
+                // Exit first iteration
+                interim_swap_state = false;
+            }
+            // interim_setpoint = last position
+            interim_setpoint = interim_position;
+            break;
+
+
+
+        /***************************/
+        /*        GRAVITY          */
+        /***************************/
+
+        case GRAVITY:
+            // First iteration:
+            if(interim_swap_state){
+
+                // interim time offset = last time
+                interim_elapsed_time_offset = interim_elapsed_time;
+                // Stiffness = 0 Nm/rad
+                interim_impedance_stiffness = 0.0;
+                // Damping = 0.1 Nm/rad^2
+                interim_impedance_damping = 0.1;
+                // Exit first iteration
+                interim_swap_state = false;
+            }
+            // interim_setpoint = last position
+            interim_setpoint = interim_position;
+
+        break;
+
+        default:
+            break;
+        }
+
+
+
 
         // State Impedance - used for testbed tests
         if(interim_command == TRIGGER)
@@ -599,6 +751,7 @@ void testbed_ros_interface::Control_thread(){
 
         }
 
+        /*
         else if(interim_command == ADAPTIVE){
 
             // Compute time variable
@@ -616,55 +769,35 @@ void testbed_ros_interface::Control_thread(){
             interim_impedance_stiffness = adaptive_impedance_stiffness;
             interim_impedance_damping = interim_impedance_stiffness/5;
         }
-        else if(interim_command == IMPEDANCE_EXT){
-            // interim_setpoint = last_interim_position
-            // interim_impedance = changed by terminal
-            // interim_stiffness = changed by terminal
-
-            if(interim_time_exercise > EXERCISE_DURATION){
-                interim_elapsed_time_offset = interim_elapsed_time;
-            }
-
-            // Compute time variable
-            interim_time_exercise = (interim_elapsed_time-interim_elapsed_time_offset);
-
-            // Beta-Function
-            interim_setpoint = P0+P1*pow((interim_time_exercise-P2),P3)*pow((P4-interim_time_exercise),P5);
 
 
-        }
-        else if(interim_command == IMPEDANCE){
-            // interim_setpoint = computed in RT-machine
-            interim_setpoint = interim_position;
-            interim_impedance_stiffness = 5.0;
-            interim_impedance_damping = 0.5;
-        }
 
-        // TODO: TUNE FREEZE PARAMETERS
+
+
         else if(interim_command == FREEZE){
-            // interim_setpoint = last position
-            interim_impedance_stiffness = 45.0;
-            interim_impedance_damping = 5.0;
+            if(interim_swap_state){
+                // interim_setpoint = last position
+                interim_setpoint = interim_position;
+                // Stiffness = 60 Nm/rad
+                interim_impedance_stiffness = 60.0;
+                // Damping = 15 Nm/rad^2 -> derived from stiffness
+                interim_impedance_damping = STIFFNESS_TO_DAMPING_RATIO*interim_impedance_stiffness;
+                // Exit first iteration
+                interim_swap_state = false;
+            }
+            // Damping is derived from stiffness
+            interim_impedance_damping = STIFFNESS_TO_DAMPING_RATIO*interim_impedance_stiffness;
         }
-        else if(interim_command == GRAVITY){
-            // interim_setpoint = computed in RT-machine
-            interim_impedance_stiffness = 0.0;
-            interim_impedance_damping = 0.1;
-        }
-        else if(interim_command == WEIGHT){
-            // interim_setpoint = computed in RT-machine
-            interim_impedance_stiffness = 0.0;
-            interim_impedance_damping = 0.1;
-        }
-        else if(interim_command == POSITION){
-            interim_setpoint = -M_PI/2.0;
-//            interim_impedance_stiffness = 5.0;
-//            interim_impedance_damping = 0.5;
-        }
+        */
+
+
+
+
+
+        /*
         else {
 
             // During other modes, update setpoint to interim_position -> Motor follows movement
-            interim_setpoint = interim_position;
             //saved_impedance_stiffness = interim_impedance_stiffness;
             //saved_impedance_damping   = interim_impedance_damping;
             interim_exercise_status   = REST;
@@ -680,6 +813,7 @@ void testbed_ros_interface::Control_thread(){
             adaptive_impedance_stiffness        = 5.0;
             adaptive_impedance_damping          = 0.5;
         }
+        */
 
         // ~100 Hz Control Frequency
         // TODO: CLOCKTIME

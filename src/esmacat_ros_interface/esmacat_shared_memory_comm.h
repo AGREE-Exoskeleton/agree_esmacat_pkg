@@ -22,7 +22,7 @@ class esmacat_shared_memory_comm
         uint64_t        command     = 1;
         joint_status_t                   joint_status[N_DOFS_MAX];
         joint_impedance_control_status_t joint_impedance_control_status[N_DOFS_MAX];
-        joint_controller_configuration_t joint_impedance_control_config[N_DOFS_MAX];
+        joint_task_control_command_t     joint_task_control_parameters[N_DOFS_MAX];
         robot_configuration_t            robot_config;
     };
 

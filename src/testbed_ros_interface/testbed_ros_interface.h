@@ -52,8 +52,10 @@
 
 #define EXERCISE_START              -M_PI/2.0
 #define EXERCISE_STOP               M_PI/2
-#define EXERCISE_DURATION           5000.0
+#define EXERCISE_DURATION           8000.0
 #define EXERCISE_AMPLITUDE          M_PI/2.0
+
+#define STIFFNESS_TO_DAMPING_RATIO  0.25
 
 #define TRIGGER_TORQUE_THRESHOLD    750
 #define TRIGGER_THRESHOLD           0.1
@@ -102,7 +104,7 @@ public:
     boost_ROS_publish_thread    = boost::thread(&testbed_ros_interface::ROS_publish_thread, this);
     boost_ROS_subscribe_thread  = boost::thread(&testbed_ros_interface::ROS_subscribe_thread, this);
     boost_ROS_command_thread  = boost::thread(&testbed_ros_interface::ROS_command_thread, this);
-    boost_adaptive_control_thread  = boost::thread(&testbed_ros_interface::Control_thread, this);
+    boost_adaptive_control_thread  = boost::thread(&testbed_ros_interface::control_thread, this);
 
     std::cout << "ROS interface objects instantiated" << std::endl;
     interim_command                  = STOP;
@@ -201,7 +203,7 @@ private:
   void ROS_subscribe_thread();
   void ROS_publish_thread();
   void ROS_command_thread();
-  void Control_thread();
+  void control_thread();
   void ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_status msg);
 
   void print_command_keys();
