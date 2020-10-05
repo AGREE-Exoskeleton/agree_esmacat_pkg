@@ -37,21 +37,13 @@ const string state_labels[] = {
   "GRAVITY",
   "FREEZE",
   "IMPEDANCE",
-    "HOMING",
-    "POSITION",
+  "HOMING",
+  "POSITION",
+  "WEIGHT",
+  "IMPEDANCE_EXT",
+  "TRIGGER",
 };
 
-//enum RobotState
-//{
-//  EXIT,
-//  STOP,
-//  CURRENT,
-//  TORQUE,
-//  NULLTORQUE,
-//  GRAVITY,
-//  FREEZE,
-//  QUIT,
-//};
 
 class esmacat_ros_interface_class
 {
