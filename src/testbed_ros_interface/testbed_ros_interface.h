@@ -19,27 +19,23 @@
 #include "std_msgs/Int64.h"
 
 // EsmaBox FSM
-#define EXIT    0
-#define STOP    1
-#define CURRENT 2
-#define TORQUE  3
-#define NULLTORQUE 4
-#define GRAVITY 5
-#define FREEZE  6
-#define IMPEDANCE 7
-#define HOMING    8
-#define POSITION  9
-#define WEIGHT    10
+#define EXIT        0
+#define STOP        1
+#define CURRENT     2
+#define TORQUE      3
+#define NULLTORQUE  4
+#define GRAVITY     5
+#define FREEZE      6
+#define IMPEDANCE   7
+#define HOMING      8
+#define POSITION    9
+#define WEIGHT      10
 #define IMPEDANCE_EXT 11
-#define TRIGGER   12
-#define ADAPTIVE  13
-
-#define PASSIVE     1001
-#define ACTIVE      1002
-#define ANTIG       1003
-#define TRANSPARENT 1004
-#define CHALLENGING 1005
-#define RESISTIVE   1006
+#define TRIGGER     12
+#define ADAPTIVE    13
+#define PASSIVE     14
+#define RESISTIVE   15
+#define CHALLENGING 16
 
 #define HOMING_DONE 108
 #define POSITION_DONE 109
@@ -55,7 +51,7 @@
 #define EXERCISE_DURATION           8000.0
 #define EXERCISE_AMPLITUDE          M_PI/2.0
 
-#define STIFFNESS_TO_DAMPING_RATIO  0.25
+#define STIFFNESS_TO_DAMPING_RATIO  0.20
 
 #define TRIGGER_TORQUE_THRESHOLD    750
 #define TRIGGER_THRESHOLD           0.1
@@ -81,19 +77,23 @@ const string color_key = "\033[0m";
 
 //Labels for states
 const string state_labels[] = {
-  "EXIT",
-  "STOP",
-  "CURRENT",
-  "TORQUE",
-  "NULLTORQUE",
-  "GRAVITY",
-  "FREEZE",
-  "IMPEDANCE",
+    "EXIT",
+    "STOP",
+    "CURRENT",
+    "TORQUE",
+    "NULLTORQUE",
+    "GRAVITY",
+    "FREEZE",
+    "IMPEDANCE",
     "HOMING",
     "POSITION",
     "WEIGHT",
-    "IMPEDANCE_EXTERNAL",
-    "TRIGGER"
+    "IMPEDANCE_EXT",
+    "TRIGGER",
+    "ADAPTIVE",
+    "PASSIVE",
+    "RESISTIVE",
+    "CHALLENGING",
 };
 
 class testbed_ros_interface
