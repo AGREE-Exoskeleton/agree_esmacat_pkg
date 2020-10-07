@@ -45,7 +45,7 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
     loop_rate.sleep();
     interim_roscount++;
-    if (esmacat_sm.data->command == 0)
+    if (esmacat_sm.data->command == 0 || esmacat_sm.data->status == 0)
     {
       ROS_INFO("AGREE ROS Interface shutting down..");
       ros::shutdown();
