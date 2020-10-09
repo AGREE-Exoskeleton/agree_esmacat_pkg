@@ -453,7 +453,7 @@ void testbed_ros_interface::control_thread(){
                 // Stiffness = 10 Nm/rad
                 interim_impedance_stiffness = 25.0;
                 // Assistance = 50%
-                interim_weight_assistance = 0.5;
+                interim_weight_assistance = WEIGHT_ASSISTANCE;
                 // Exit first iteration
                 interim_swap_state = false;
             }
@@ -493,7 +493,7 @@ void testbed_ros_interface::control_thread(){
                 // interim_setpoint = last position
                 interim_setpoint = interim_position;
                 // Assistance = 50%
-                interim_weight_assistance = 0.5;
+                interim_weight_assistance = WEIGHT_ASSISTANCE;
                 // Stiffness = 60 Nm/rad
                 interim_impedance_stiffness = 5.0;
                 // Damping = 15 Nm/rad^2 -> derived from stiffness
@@ -502,14 +502,19 @@ void testbed_ros_interface::control_thread(){
                 interim_elapsed_time_offset = interim_elapsed_time;
                 // Exit first iteration
                 interim_swap_state = false;
+                interim_repetition=0;
+
             }
 
                 // interim_impedance = changed by terminal
                 // interim_stiffness = changed by terminal
 
                 // Restart Beta-Function
-                if(interim_time_exercise > EXERCISE_DURATION) interim_elapsed_time_offset = interim_elapsed_time;
-
+                if(interim_time_exercise > EXERCISE_DURATION) {
+                    interim_elapsed_time_offset = interim_elapsed_time;
+                    interim_repetition++;
+                    ROS_INFO("Repetition #%d",interim_repetition);
+                }
                 // Beta-Function
                 interim_setpoint = interim_setpoint_exercise;
 
@@ -527,7 +532,7 @@ void testbed_ros_interface::control_thread(){
                 // interim_setpoint = last position
                 interim_setpoint = interim_position;
                 // Assistance = 50%
-                interim_weight_assistance = 0.5;
+                interim_weight_assistance = WEIGHT_ASSISTANCE;
                 // Stiffness = 60 Nm/rad
                 interim_impedance_stiffness = 50;
                 // Damping = 15 Nm/rad^2 -> derived from stiffness
@@ -536,14 +541,19 @@ void testbed_ros_interface::control_thread(){
                 interim_elapsed_time_offset = interim_elapsed_time;
                 // Exit first iteration
                 interim_swap_state = false;
+                interim_repetition=0;
+
             }
 
                 // interim_impedance = changed by terminal
                 // interim_stiffness = changed by terminal
 
-                // Restart Beta-Function
-                if(interim_time_exercise > EXERCISE_DURATION) interim_elapsed_time_offset = interim_elapsed_time;
-
+            // Restart Beta-Function
+            if(interim_time_exercise > EXERCISE_DURATION) {
+                interim_elapsed_time_offset = interim_elapsed_time;
+                interim_repetition++;
+                ROS_INFO("Repetition #%d",interim_repetition);
+            }
                 // Beta-Function
                 interim_setpoint = interim_setpoint_exercise;
 
@@ -567,14 +577,19 @@ void testbed_ros_interface::control_thread(){
                 // Damping = 0.1 Nm/rad^2
                 interim_impedance_damping = 0.1;
                 // Assistance = 50%
-                interim_weight_assistance = 0.5;
+                interim_weight_assistance = WEIGHT_ASSISTANCE;
                 // Exit first iteration
                 interim_swap_state = false;
+                interim_repetition=0;
+
             }
 
             // Restart Beta-Function
-            if(interim_time_exercise > EXERCISE_DURATION) interim_elapsed_time_offset = interim_elapsed_time;
-
+            if(interim_time_exercise > EXERCISE_DURATION) {
+                interim_elapsed_time_offset = interim_elapsed_time;
+                interim_repetition++;
+                ROS_INFO("Repetition #%d",interim_repetition);
+            }
             // Beta-Function
             interim_setpoint = interim_setpoint_exercise;
 
@@ -596,11 +611,16 @@ void testbed_ros_interface::control_thread(){
                 interim_impedance_damping = 0.1;
                 // Exit first iteration
                 interim_swap_state = false;
+                interim_repetition=0;
+
             }
 
             // Restart Beta-Function
-            if(interim_time_exercise > EXERCISE_DURATION) interim_elapsed_time_offset = interim_elapsed_time;
-
+            if(interim_time_exercise > EXERCISE_DURATION) {
+                interim_elapsed_time_offset = interim_elapsed_time;
+                interim_repetition++;
+                ROS_INFO("Repetition #%d",interim_repetition);
+            }
             // Beta-Function
             interim_setpoint = interim_setpoint_exercise;
 
@@ -615,14 +635,19 @@ void testbed_ros_interface::control_thread(){
                 // Stiffness = 0 Nm/rad
                 interim_impedance_stiffness = 0.0;
                 // Damping = 0.1 Nm/rad^2
-                interim_impedance_damping = 1.5;
+                interim_impedance_damping = 2.5;
                 // Exit first iteration
                 interim_swap_state = false;
+                interim_repetition=0;
+
             }
 
             // Restart Beta-Function
-            if(interim_time_exercise > EXERCISE_DURATION) interim_elapsed_time_offset = interim_elapsed_time;
-
+            if(interim_time_exercise > EXERCISE_DURATION) {
+                interim_elapsed_time_offset = interim_elapsed_time;
+                interim_repetition++;
+                ROS_INFO("Repetition #%d",interim_repetition);
+            }
             // Beta-Function
             interim_setpoint = interim_setpoint_exercise;
 
@@ -642,11 +667,16 @@ void testbed_ros_interface::control_thread(){
                 interim_weight_assistance = -1.0;
                 // Exit first iteration
                 interim_swap_state = false;
+
+                interim_repetition=0;
             }
 
             // Restart Beta-Function
-            if(interim_time_exercise > EXERCISE_DURATION) interim_elapsed_time_offset = interim_elapsed_time;
-
+            if(interim_time_exercise > EXERCISE_DURATION) {
+                interim_elapsed_time_offset = interim_elapsed_time;
+                interim_repetition++;
+                ROS_INFO("Repetition #%d",interim_repetition);
+            }
             // Beta-Function
             interim_setpoint = interim_setpoint_exercise;
 

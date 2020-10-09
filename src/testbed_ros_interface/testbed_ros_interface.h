@@ -52,6 +52,7 @@
 #define EXERCISE_AMPLITUDE          M_PI/2.0
 
 #define STIFFNESS_TO_DAMPING_RATIO  0.20
+#define WEIGHT_ASSISTANCE           0.75
 
 #define TRIGGER_TORQUE_THRESHOLD    750
 #define TRIGGER_THRESHOLD           0.1
@@ -125,6 +126,8 @@ public:
     interim_timestamp               = 0;
     trigger_mode                    = TRIGGER_POSITION;
 
+    interim_repetition              = 0;
+
 
     adaptive_impedance_stiffness    = 0.0;
     adaptive_filtered_error_rad         = 0.0;
@@ -164,6 +167,7 @@ public:
   float interim_setpoint_final;
   float interim_setpoint_start;
   int trigger_mode;
+  int interim_repetition;
 
   // Status variables
   float interim_position;
