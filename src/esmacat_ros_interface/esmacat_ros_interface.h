@@ -29,29 +29,24 @@ const string color_key = "\033[0m";
 
 //Labels for states
 const string state_labels[] = {
-  "EXIT",
-  "STOP",
-  "CURRENT",
-  "TORQUE",
-  "NULLTORQUE",
-  "GRAVITY",
-  "FREEZE",
-  "IMPEDANCE",
+    "EXIT",
+    "STOP",
+    "CURRENT",
+    "TORQUE",
+    "NULLTORQUE",
+    "GRAVITY",
+    "FREEZE",
+    "IMPEDANCE",
     "HOMING",
     "POSITION",
+    "WEIGHT",
+    "IMPEDANCE_EXT",
+    "TRIGGER",
+    "ADAPTIVE",
+    "PASSIVE",
+    "RESISTIVE",
+    "CHALLENGING",
 };
-
-//enum RobotState
-//{
-//  EXIT,
-//  STOP,
-//  CURRENT,
-//  TORQUE,
-//  NULLTORQUE,
-//  GRAVITY,
-//  FREEZE,
-//  QUIT,
-//};
 
 class esmacat_ros_interface_class
 {

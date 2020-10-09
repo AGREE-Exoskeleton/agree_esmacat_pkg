@@ -18,11 +18,20 @@ void smartbox_interface::ROS_publish_thread(){
 
   while (ros::ok()){
 
-    msg.command     = interim_command;
-    msg.damping_d = interim_impedance_damping;
-    msg.stiffness_k = interim_impedance_stiffness;
-    sine = sin(2*3.1415*(double)interim_roscount++/500.0);
-    msg.setpoint = M_PI/4*sine;
+      sine = sin(2*3.1415*(double)interim_roscount++/500.0);
+
+      msg.command     = interim_command;
+
+      msg.setpoint.clear();
+      msg.damping_d.clear();
+      msg.stiffness_k.clear();
+
+      for(int joint_index=0;joint_index<N_DOFS_MAX;joint_index++){
+          msg.setpoint.push_back(M_PI/4*sine);
+          msg.damping_d.push_back(interim_impedance_damping);
+          msg.stiffness_k.push_back(interim_impedance_stiffness);
+      }
+
 
     clock_gettime( CLOCK_REALTIME, &temp);
 
@@ -30,7 +39,7 @@ void smartbox_interface::ROS_publish_thread(){
     msg.timestamp = (float)(timestamp.tv_sec);
 
     pub_esmacat_write.publish(msg);
-    if(interim_command==0) ros::shutdown();
+    if(interim_command== EXIT) ros::shutdown();
 
     loop_rate.sleep();
   }

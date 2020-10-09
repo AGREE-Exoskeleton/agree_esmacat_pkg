@@ -24,29 +24,28 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
   while (ros::ok()){
 
-    //    command.setpoint = (int64_t) 100*sin((2.0*3.14159)*interim_roscount/100.0);
-    //    command.state = interim_state
-
-    // TODO: INCREASE ELAPSED TIME ON RT-CODE
-    // esmacat_sm.data->elapsed_time++;
     msg.elapsed_time    = esmacat_sm.data->elapsed_time;
     msg.status          = esmacat_sm.data->status;
 
-    msg.encoder_position.clear();
-    msg.encoder_position.push_back(esmacat_sm.data->joint_status.incremental_encoder_position_radians);
+    msg.joint_position.clear();
+    msg.joint_velocity.clear();
+    msg.joint_torque.clear();
+    msg.setpoint_torque.clear();
 
-    msg.encoder_speed.clear();
-    msg.encoder_speed.push_back(esmacat_sm.data->joint_status.velocity_rad_per_s);
+    for(int joint_index=0;joint_index<5;joint_index++){
+        msg.joint_position.push_back(esmacat_sm.data->joint_status[joint_index].incremental_encoder_position_radians);
+        msg.joint_velocity.push_back(esmacat_sm.data->joint_status[joint_index].velocity_rad_per_s);
+        msg.joint_torque.push_back(esmacat_sm.data->joint_status[joint_index].loadcell_torque_mNm);
+//        msg.setpoint_torque.push_back(esmacat_sm.data->joint_status[joint_index].loadcell_torque_mNm);
 
-    msg.loadcell_torque.clear();
-    msg.loadcell_torque.push_back(esmacat_sm.data->joint_status.loadcell_torque_mNm);
+    }
 
 
     publisher.publish(msg);
 
     loop_rate.sleep();
     interim_roscount++;
-    if (esmacat_sm.data->stop)
+    if (esmacat_sm.data->command == 0 || esmacat_sm.data->status == 0)
     {
       ROS_INFO("AGREE ROS Interface shutting down..");
       ros::shutdown();
@@ -79,23 +78,27 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
     ROS_INFO("Change MODE to: %s",state_labels[msg.command].c_str());
   }
 
-  if(prev_damping != msg.damping_d){
-    ROS_INFO("Change DAMPING to: %f",msg.damping_d);
+  if(prev_damping != msg.damping_d[0]){
+    ROS_INFO("Change DAMPING to: %f",msg.damping_d[0]);
   }
 
-  if(prev_stiffness != msg.stiffness_k){
-    ROS_INFO("Change STIFFNESS to: %f",msg.stiffness_k);
+  if(prev_stiffness != msg.stiffness_k[0]){
+    ROS_INFO("Change STIFFNESS to: %f",msg.stiffness_k[0]);
   }
 
   // Save data from ROS message to shared memory
-  esmacat_sm.data->command =  msg.command;
-  esmacat_sm.data->joint_controller.impedance_control_k_gain_mNm_per_rad = msg.stiffness_k;
-  esmacat_sm.data->joint_controller.impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d;
-  esmacat_sm.data->impedance_status.impedance_control_setpoint_rad = msg.setpoint;
+  esmacat_sm.data->command                                  =  msg.command;
+  esmacat_sm.data->robot_config.weight_compensation_level   = msg.weight_assistance;
+
+  for(int joint_index = 0; joint_index < 5; joint_index++){
+      esmacat_sm.data->joint_task_control_parameters[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];
+      esmacat_sm.data->joint_task_control_parameters[joint_index].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d[joint_index];
+      esmacat_sm.data->joint_task_control_parameters[joint_index].impedance_control_setpoint_rad               = msg.setpoint[joint_index];
+  }
 
   prev_command   = msg.command;
-  prev_stiffness = msg.stiffness_k;
-  prev_damping   = msg.damping_d;
+  prev_stiffness = msg.stiffness_k[0];
+  prev_damping   = msg.damping_d[0];
 }
 
 void esmacat_ros_interface_class::print_command_keys()

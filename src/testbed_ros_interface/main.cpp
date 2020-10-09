@@ -12,6 +12,7 @@ int main(int argc, char **argv)
   // Spinner Configuration
   ros::MultiThreadedSpinner spinner; // Use 4 threads (default)
 
+
   // Start Spinner
   spinner.spin();
 
