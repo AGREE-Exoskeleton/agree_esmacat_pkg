@@ -380,7 +380,7 @@ void testbed_ros_interface::ROS_command_thread(){
     }
     else
     {
-      std::cout << yellow_key << state_labels[commanded_state] << color_key << " is the state currently active" << std::endl << std::endl;
+      std::cout << yellow_key << robot_mode_labels[commanded_state] << color_key << " is the state currently active" << std::endl << std::endl;
     } // else
 
   } // while
@@ -988,9 +988,9 @@ void testbed_ros_interface::print_command_keys()
 
 void testbed_ros_interface::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_status msg)
 {
-    interim_position = msg.joint_position[0];
-    interim_speed    = msg.joint_velocity[0];
-    interim_torque   = msg.joint_torque[0];
+    interim_position = msg.joint_position_rad[0];
+    interim_speed    = msg.joint_speed_rad_s[0];
+    interim_torque   = msg.joint_torque_mNm[0];
 
     interim_elapsed_time = msg.elapsed_time;
   //Display data from hard real-time loop to the the terminal.

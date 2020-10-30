@@ -284,7 +284,7 @@ void smartbox_interface::ROS_command_thread(){
     }
     else
     {
-      std::cout << yellow_key << state_labels[state] << color_key << " is the state currently active" << std::endl << std::endl;
+      std::cout << yellow_key << robot_mode_labels[state] << color_key << " is the state currently active" << std::endl << std::endl;
     } // else
 
   } // while

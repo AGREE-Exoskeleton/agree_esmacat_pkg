@@ -77,7 +77,7 @@ const string green_key = "\033[32m";
 const string color_key = "\033[0m";
 
 //Labels for states
-const string state_labels[] = {
+const string robot_mode_labels[] = {
     "EXIT",
     "STOP",
     "CURRENT",

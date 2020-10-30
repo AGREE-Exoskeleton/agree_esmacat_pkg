@@ -14,7 +14,10 @@
 #include "std_msgs/Float64.h"
 #include "std_msgs/String.h"
 
-#include "esmacat_shared_memory_comm.h"
+#include "esmacat_applications/agree_mini_torque_driver/agree_joint_structs.h"
+#include "esmacat_applications/agree_mini_torque_driver/agree_shared_memory_comm.h"
+// #include "esmacat_shared_memory_comm.h"
+
 
 using namespace std;
 
@@ -27,27 +30,6 @@ const string blue_key = "\033[36m";
 const string green_key = "\033[32m";
 const string color_key = "\033[0m";
 
-//Labels for states
-const string state_labels[] = {
-    "EXIT",
-    "STOP",
-    "CURRENT",
-    "TORQUE",
-    "NULLTORQUE",
-    "GRAVITY",
-    "FREEZE",
-    "IMPEDANCE",
-    "HOMING",
-    "POSITION",
-    "WEIGHT",
-    "IMPEDANCE_EXT",
-    "TRIGGER",
-    "ADAPTIVE",
-    "PASSIVE",
-    "RESISTIVE",
-    "CHALLENGING",
-};
-
 class esmacat_ros_interface_class
 {
 public:
@@ -55,8 +37,11 @@ public:
   {
     boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface_class::ROS_publish_thread, this);
     boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface_class::ROS_subscribe_thread, this);
-    ROS_INFO("AGREE ROS Interface threads instantiated");
     esmacat_sm.init();
+    // Initialize command and status
+    esmacat_sm.set_esmacat_command(STOP);
+    esmacat_sm.set_esmacat_status(STOP);
+    ROS_INFO("AGREE ROS Interface threads instantiated");
   }
 
   ~esmacat_ros_interface_class()
@@ -65,7 +50,7 @@ public:
     boost_ROS_subscribe_thread.join();
   }
 
-  esmacat_shared_memory_comm esmacat_sm;
+  agree_shared_memory_comm esmacat_sm;
 
 private:
 

@@ -1,4 +1,3 @@
-#include "esmacat_shared_memory_comm.h"
 #include "ros/ros.h"
 #include "esmacat_ros_interface.h"
 
