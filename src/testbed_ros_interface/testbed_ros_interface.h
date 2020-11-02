@@ -146,7 +146,7 @@ public:
   }
 
   // Command variables
-  uint64_t interim_command;
+  uint16_t interim_command;
   uint64_t interim_exercise_status = REST;
   float    interim_exercise_counter = 0;
 

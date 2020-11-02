@@ -1,4 +1,3 @@
 <launch>
-<node pkg="agree_esmacat_pkg" name="shared_memory_interface" type="esmacat_ros_interface" output="screen" />
-<node pkg="agree_esmacat_pkg" name="keyboard_interface" type="smartbox_ros_interface" required="true" output="screen" />
+<node pkg="agree_esmacat_pkg" name="shared_memory_interface" type="esmacat_ros_interface" output="screen"  launch-prefix="sudo -E" />
 </launch>

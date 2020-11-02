@@ -1,4 +1,4 @@
-uint8   command
+uint16   command
 float64 timestamp
 float64[] setpoint
 float64[] stiffness_k

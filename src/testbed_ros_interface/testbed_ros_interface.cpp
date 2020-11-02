@@ -365,7 +365,7 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
       }
 
-      interim_command = (uint64_t) commanded_state;
+      interim_command = (uint8_t) commanded_state;
 
       if(!interim_command) {
           closefile();

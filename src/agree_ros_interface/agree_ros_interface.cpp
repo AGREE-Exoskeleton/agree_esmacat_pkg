@@ -1,4 +1,4 @@
-#include "esmacat_ros_interface.h"
+#include "agree_ros_interface.h"
 #include "ros/ros.h"
 #include <string.h>
 #include <stdio.h>
@@ -46,7 +46,8 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
     if (esmacat_sm.data->agree_command == 0 || esmacat_sm.data->agree_status == 0)
     {
-      ROS_INFO("AGREE ROS Interface shutting down..");
+      ROS_INFO("AGREE ROS-SHM Interface exit conditions met and shutting down..");
+      esmacat_sm.detach_shared_memory();
       ros::shutdown();
       break;
     }
@@ -72,9 +73,17 @@ void esmacat_ros_interface_class::ROS_subscribe_thread(){
 
 void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg)
 {
+
+
+  // Save data from ROS message to shared memory
+  esmacat_sm.data->mode                                  = (control_mode_t) msg.command;
+  esmacat_sm.data->agree_command                         = msg.command;
+  //esmacat_sm.data->robot_config.weight_compensation_level   = msg.weight_assistance;
+
   //Display data from hard real-time loop to the the terminal.
   if(prev_command != msg.command)  {
     ROS_INFO("Change MODE to: %s",robot_mode_labels[msg.command].c_str());
+    cout << "Mode: " << msg.command << " " << esmacat_sm.data->agree_command << endl;
   }
 
   if(prev_damping != msg.damping_d[0]){
@@ -84,10 +93,6 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   if(prev_stiffness != msg.stiffness_k[0]){
     ROS_INFO("Change STIFFNESS to: %f",msg.stiffness_k[0]);
   }
-
-  // Save data from ROS message to shared memory
-  esmacat_sm.data->agree_command                                  =  msg.command;
-  //esmacat_sm.data->robot_config.weight_compensation_level   = msg.weight_assistance;
 
   for(int joint_index = 0; joint_index < 5; joint_index++){
       esmacat_sm.data->J_impedance_control_command[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];

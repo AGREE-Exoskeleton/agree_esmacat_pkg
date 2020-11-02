@@ -15,8 +15,7 @@
 #include "std_msgs/String.h"
 
 #include "esmacat_applications/agree_mini_torque_driver/agree_joint_structs.h"
-#include "esmacat_applications/agree_mini_torque_driver/agree_shared_memory_comm.h"
-// #include "esmacat_shared_memory_comm.h"
+#include "agree_shared_memory_comm.h"
 
 
 using namespace std;
@@ -33,16 +32,30 @@ const string color_key = "\033[0m";
 class esmacat_ros_interface_class
 {
 public:
-  esmacat_ros_interface_class()
-  {
-    boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface_class::ROS_publish_thread, this);
-    boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface_class::ROS_subscribe_thread, this);
-    esmacat_sm.init();
-    // Initialize command and status
-    esmacat_sm.set_esmacat_command(STOP);
-    esmacat_sm.set_esmacat_status(STOP);
-    ROS_INFO("AGREE ROS Interface threads instantiated");
-  }
+    esmacat_ros_interface_class()
+    {
+        // Initializing the shared memory
+        if (esmacat_sm.init())
+        {
+            int key = esmacat_sm.get_shared_memory_key();
+            ROS_INFO("AGREE ROS-SHM Interface shared memory initialized with key 0x%x", key);    // start the shared memory communication
+        }
+        else
+        {
+            cout << "AGREE ROS-SHM Interface shared memory initialization has been failed";
+            esmacat_sm.detach_shared_memory();
+        }
+
+        // Initialize command and status
+        esmacat_sm.set_esmacat_command(control_mode_t::standby);
+        esmacat_sm.set_esmacat_status(control_mode_t::standby);
+
+        // Start Boost threads
+        boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface_class::ROS_publish_thread, this);
+        boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface_class::ROS_subscribe_thread, this);
+
+        ROS_INFO("AGREE ROS-SHM Interface threads instantiated");
+    }
 
   ~esmacat_ros_interface_class()
   {
@@ -54,7 +67,7 @@ public:
 
 private:
 
-  uint64_t prev_command;
+  uint16_t prev_command;
   double   prev_stiffness;
   double   prev_damping;
 

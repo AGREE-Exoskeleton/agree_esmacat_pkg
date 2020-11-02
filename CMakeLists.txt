@@ -133,6 +133,7 @@ include_directories(
     # include
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    home/esmacat/esmacat_rt/esmacat_master_high_performace
     #  include/${PROJECT_NAME}
     )
 
@@ -228,5 +229,7 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_subdirectory(src/smartbox_ros_interface)
-add_subdirectory(src/esmacat_ros_interface)
+add_subdirectory(src/agree_ros_interface)
 add_subdirectory(src/testbed_ros_interface)
+add_subdirectory(src/agree_shared_memory_interface)
+
