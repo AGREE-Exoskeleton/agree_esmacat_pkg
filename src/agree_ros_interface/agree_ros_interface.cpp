@@ -10,8 +10,6 @@
 void esmacat_ros_interface_class::ROS_publish_thread(){
 
   //Declare a message and setup the publisher for that message
-  //  esmacat_ros_interface::esmacat_command command;
-  //    std_msgs::Int64 msg;
   agree_esmacat_pkg::agree_esmacat_status msg;
   ros::NodeHandle n;
   ros::Rate loop_rate(100);
@@ -46,7 +44,7 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
     if (esmacat_sm.data->agree_command == 0 || esmacat_sm.data->agree_status == 0)
     {
-      ROS_INFO("AGREE ROS-SHM Interface exit conditions met and shutting down..");
+      ROS_INFO("AGREE SHM Interface exit conditions met and shutting down..");
       esmacat_sm.detach_shared_memory();
       ros::shutdown();
       break;
@@ -78,7 +76,7 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   // Save data from ROS message to shared memory
   esmacat_sm.data->mode                                  = (control_mode_t) msg.command;
   esmacat_sm.data->agree_command                         = msg.command;
-  //esmacat_sm.data->robot_config.weight_compensation_level   = msg.weight_assistance;
+  esmacat_sm.data->agree_weight_config.weight_assistance = msg.weight_assistance;
 
   //Display data from hard real-time loop to the the terminal.
   if(prev_command != msg.command)  {
@@ -103,6 +101,49 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   prev_command   = msg.command;
   prev_stiffness = msg.stiffness_k[0];
   prev_damping   = msg.damping_d[0];
+}
+
+
+/************************/
+/* ROS Parameters Thread */
+/************************/
+
+void esmacat_ros_interface_class::ROS_parameters_thread(){
+
+  //Setup a subscriber that will get data from other ROS nodes
+  ros::MultiThreadedSpinner spinner(0); // Use 4 threads
+
+  ros::NodeHandle n;
+
+  int mode;
+
+  if (n.hasParam("robot_parameters"))
+    {
+      n.getParam("robot_parameters/starting_mode",mode );
+      esmacat_sm.data->mode = static_cast<control_mode_t>(mode);
+
+      ROS_INFO("AGREE Robot Parameters");
+    }
+  else
+  {
+      ROS_ERROR("Failed to get ROS parameters 'robot_parameters'");
+  }
+
+  float weight,height;
+  if (n.hasParam("user_parameters"))
+    {
+      n.getParam("user_parameters/weight",weight );
+      n.getParam("user_parameters/height",height );
+
+      esmacat_sm.data->agree_weight_config.human_weight_kg =  weight;
+      esmacat_sm.data->agree_weight_config.human_height_m =   height;
+      ROS_INFO("AGREE User Parameters");
+    }
+  else
+  {
+    ROS_ERROR("Failed to get ROS parameters 'user_parameters'");
+  }
+
 }
 
 void esmacat_ros_interface_class::print_command_keys()

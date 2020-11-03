@@ -25,8 +25,10 @@ class agree_shared_memory_comm
         agree_joint_status_t            J_status[9];
         agree_torque_control_status_t     J_torque_status[9];
 
-        sea_impedance_control_command_t J_impedance_control_command[9];
+        agree_impedance_control_command_t J_impedance_control_command[9];
         agree_impedance_control_status_t  J_impedance_control_status[9];
+
+        agree_weight_compensation_config_t agree_weight_config;
 
         double elapsed_time_ms = 0;
         int last_joint_index = 0;

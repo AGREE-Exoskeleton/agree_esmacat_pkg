@@ -38,11 +38,11 @@ public:
         if (esmacat_sm.init())
         {
             int key = esmacat_sm.get_shared_memory_key();
-            ROS_INFO("AGREE ROS-SHM Interface shared memory initialized with key 0x%x", key);    // start the shared memory communication
+            ROS_INFO("AGREE SHM Interface shared memory initialized with key 0x%x", key);    // start the shared memory communication
         }
         else
         {
-            cout << "AGREE ROS-SHM Interface shared memory initialization has been failed";
+            cout << "AGREE SHM Interface shared memory initialization has been failed";
             esmacat_sm.detach_shared_memory();
         }
 
@@ -50,11 +50,14 @@ public:
         esmacat_sm.set_esmacat_command(control_mode_t::standby);
         esmacat_sm.set_esmacat_status(control_mode_t::standby);
 
+
         // Start Boost threads
         boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface_class::ROS_publish_thread, this);
         boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface_class::ROS_subscribe_thread, this);
+        boost_ROS_parameters_thread  = boost::thread(&esmacat_ros_interface_class::ROS_parameters_thread, this);
 
-        ROS_INFO("AGREE ROS-SHM Interface threads instantiated");
+
+        ROS_INFO("AGREE SHM Interface threads instantiated");
     }
 
   ~esmacat_ros_interface_class()
@@ -73,9 +76,12 @@ private:
 
   boost::thread boost_ROS_publish_thread;
   boost::thread boost_ROS_subscribe_thread;
+  boost::thread boost_ROS_parameters_thread;
 
   void ROS_subscribe_thread();
   void ROS_publish_thread();
+  void ROS_parameters_thread();
+
 
   void ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg);
 

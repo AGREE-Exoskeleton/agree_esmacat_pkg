@@ -8,7 +8,12 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "agree_shared_memory_interface_node");
     ros::NodeHandle nh;
 
-    ROS_INFO("AGREE ROS-SHM Interface node launched");
+    ROS_INFO("AGREE SHM Interface node launched");
+
+//    std::vector<std::string> keys;
+//    nh.getParamNames(keys);
+//    for (auto i = keys.begin(); i != keys.end(); ++i)
+//        std::cout << *i << endl;
 
     esmacat_ros_interface_class ros_interface;
 
