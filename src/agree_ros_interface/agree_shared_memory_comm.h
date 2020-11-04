@@ -22,7 +22,7 @@ class agree_shared_memory_comm
         agree_torque_control_status_t     J_torque_status[9];
         agree_impedance_control_status_t  J_impedance_control_status[9];
 
-        agree_impedance_control_command_t J_impedance_control_command[9];
+        agree_impedance_control_command_t impedance_control_config[9];
 
         agree_weight_compensation_config_t agree_weight_config;
 
@@ -32,7 +32,7 @@ class agree_shared_memory_comm
         bool is_single_joint = 0;
 
         bool stop = false;
-        control_mode_t mode = control_mode_t::standby;
+        robot_control_mode_t mode = robot_control_mode_t::standby;
         int exercise_num = 0;
         int right_exercise_num = 0 ;
         int left_exercise_num = 0;
@@ -58,7 +58,7 @@ public:
 
     void set_esmacat_command(uint64_t command){data->agree_command = command;}
     void set_esmacat_status(uint64_t status){data->agree_status = status;}
-    void set_esmacat_mode(control_mode_t mode){data->mode = mode;}
+    void set_esmacat_mode(robot_control_mode_t mode){data->mode = mode;}
 };
 
 #endif // AGREE_ESMACAT_SHARED_MEMORY_COMM_H

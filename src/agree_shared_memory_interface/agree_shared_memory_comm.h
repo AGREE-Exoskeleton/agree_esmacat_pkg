@@ -36,7 +36,7 @@ class agree_shared_memory_comm
         bool is_single_joint = 0;
 
         bool stop = false;
-        control_mode_t mode = control_mode_t::standby;
+        robot_control_mode_t mode = robot_control_mode_t::standby;
         int exercise_num = 0;
         int right_exercise_num = 0 ;
         int left_exercise_num = 0;

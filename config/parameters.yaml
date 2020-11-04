@@ -1,19 +1,23 @@
 robot_parameters:
     starting_mode: 1
     J1:
-        ROM_Min: 0.0
-        ROM_Max: 0.0
-
+        min_angle: 0.0
+        max_angle: 45.0
     J2:
-        ROM_Min: 0.0
-        ROM_Max: 0.0
-
+        min_angle: 0.0
+        max_angle: 45.0
     J3:
-        ROM_Min: 0.0
-        ROM_Max: 0.0
+        min_angle: 0.0
+        max_angle: 45.0
+    J4:
+        min_angle: 0.0
+        max_angle: 45.0
+    J5:
+        min_angle: -180.0
+        max_angle: 180.0
 
 user_parameters:
     weight: 70.0
-    height: 178.0
+    height: 1.80
     forearm_length: 25.0
     upperarm_length: 25.0
