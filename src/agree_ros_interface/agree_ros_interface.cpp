@@ -15,7 +15,6 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
   ros::Rate loop_rate(100);
   ros::Publisher publisher = n.advertise<agree_esmacat_pkg::agree_esmacat_status>("esmacat/status", 1000);
 
-
   //Variables that setup the publishing loop
   int interim_roscount = 0;
 
@@ -30,11 +29,10 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     msg.setpoint_torque.clear();
 
     for(int joint_index=0;joint_index<5;joint_index++){
-        msg.joint_position_rad.push_back(esmacat_sm.data->J_status[joint_index].incremental_encoder_reading_radians);
-        msg.joint_speed_rad_s.push_back(esmacat_sm.data->J_status[joint_index].incremental_encoder_speed_radians_sec);
-        msg.joint_torque_mNm.push_back(esmacat_sm.data->J_status[joint_index].filtered_load_mNm);
-        msg.setpoint_torque.push_back(esmacat_sm.data->J_impedance_control_status[joint_index].torque_setpoint_mNm);
-
+        msg.joint_position_rad.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_reading_radians);
+        msg.joint_speed_rad_s.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_speed_radians_sec);
+        msg.joint_torque_mNm.push_back(esmacat_sm.data->joint_values[joint_index].filtered_load_mNm);
+        msg.setpoint_torque.push_back(esmacat_sm.data->impedance_control_terms[joint_index].torque_setpoint_mNm);
     }
 
     publisher.publish(msg);
@@ -71,17 +69,20 @@ void esmacat_ros_interface_class::ROS_subscribe_thread(){
 
 void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg)
 {
-
-
   // Save data from ROS message to shared memory
-  esmacat_sm.data->mode                                  = (robot_control_mode_t) msg.command;
-  esmacat_sm.data->agree_command                         = msg.command;
-  esmacat_sm.data->agree_weight_config.weight_assistance = msg.weight_assistance;
+  esmacat_sm.data->mode                                             = (robot_control_mode_t) msg.command;
+  esmacat_sm.data->agree_command                                    = msg.command;
+  esmacat_sm.data->arm_weight_compensation_config.weight_assistance = msg.weight_assistance;
+
+  for(int joint_index = 0; joint_index < 5; joint_index++){
+      esmacat_sm.data->impedance_control_command[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];
+      esmacat_sm.data->impedance_control_command[joint_index].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d[joint_index];
+      esmacat_sm.data->impedance_control_command[joint_index].impedance_control_setpoint_rad               = msg.setpoint[joint_index];
+  }
 
   //Display data from hard real-time loop to the the terminal.
   if(prev_command != msg.command)  {
     ROS_INFO("Change MODE to: %s",robot_mode_labels[msg.command].c_str());
-    cout << "Mode: " << msg.command << " " << esmacat_sm.data->agree_command << endl;
   }
 
   if(prev_damping != msg.damping_d[0]){
@@ -90,12 +91,6 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 
   if(prev_stiffness != msg.stiffness_k[0]){
     ROS_INFO("Change STIFFNESS to: %f",msg.stiffness_k[0]);
-  }
-
-  for(int joint_index = 0; joint_index < 5; joint_index++){
-      esmacat_sm.data->impedance_control_config[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];
-      esmacat_sm.data->impedance_control_config[joint_index].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d[joint_index];
-      esmacat_sm.data->impedance_control_config[joint_index].impedance_control_setpoint_rad               = msg.setpoint[joint_index];
   }
 
   prev_command   = msg.command;
@@ -133,8 +128,8 @@ void esmacat_ros_interface_class::ROS_parameters_thread(){
           sprintf(parameter,"robot_parameters/J%d/max_angle",joint_index+1);
           n.getParam(parameter,upper_soft_stop);
 
-          esmacat_sm.data->impedance_control_config[joint_index].soft_stop_lower_limit_rad = lower_soft_stop;
-          esmacat_sm.data->impedance_control_config[joint_index].soft_stop_upper_limit_rad = upper_soft_stop;
+          esmacat_sm.data->impedance_control_command[joint_index].soft_stop_lower_limit_rad = lower_soft_stop;
+          esmacat_sm.data->impedance_control_command[joint_index].soft_stop_upper_limit_rad = upper_soft_stop;
       }
 
       ROS_INFO("AGREE Robot Parameters");
@@ -152,10 +147,10 @@ void esmacat_ros_interface_class::ROS_parameters_thread(){
       n.getParam("user_parameters/forearm_length",forearm_length );
       n.getParam("user_parameters/upperarm_length",upperarm_length );
 
-      esmacat_sm.data->agree_weight_config.human_weight_kg  =   weight;
-      esmacat_sm.data->agree_weight_config.human_height_m   =   height;
-      esmacat_sm.data->agree_weight_config.forearm_length_m =   forearm_length;
-      esmacat_sm.data->agree_weight_config.upperarm_length_m =  upperarm_length;
+      esmacat_sm.data->arm_weight_compensation_config.human_weight_kg  =   weight;
+      esmacat_sm.data->arm_weight_compensation_config.human_height_m   =   height;
+      esmacat_sm.data->arm_weight_compensation_config.forearm_length_m =   forearm_length;
+      esmacat_sm.data->arm_weight_compensation_config.upperarm_length_m =  upperarm_length;
 
       ROS_INFO("AGREE User Parameters");
     }

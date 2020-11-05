@@ -18,18 +18,17 @@ class agree_shared_memory_comm
 {
     struct shared_memory_packet {
 
-        agree_joint_status_t              J_status[9];
-        agree_torque_control_status_t     J_torque_status[9];
-        agree_impedance_control_status_t  J_impedance_control_status[9];
+        joint_values_t              joint_values[9];
+        torque_control_terms_t      torque_control_terms[9];
+        impedance_control_terms_t   impedance_control_terms[9];
+        impedance_control_command_t impedance_control_command[9];
 
-        agree_impedance_control_command_t impedance_control_config[9];
-
-        agree_weight_compensation_config_t agree_weight_config;
+        arm_weight_compensation_config_t arm_weight_compensation_config;
 
         double elapsed_time_ms = 0;
         int last_joint_index = 0;
         int err_msg_count = 0;
-        bool is_single_joint = 0;
+        bool use_testbed = 0;
 
         bool stop = false;
         robot_control_mode_t mode = robot_control_mode_t::standby;
@@ -37,6 +36,7 @@ class agree_shared_memory_comm
         int right_exercise_num = 0 ;
         int left_exercise_num = 0;
         uint64_t loop_cnt = 0;              // count of loop
+
         uint16_t agree_command;
         uint64_t agree_status;
 

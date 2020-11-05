@@ -2,7 +2,7 @@ robot_parameters:
     starting_mode: 1
     J1:
         min_angle: 0.0
-        max_angle: 45.0
+        max_angle: 350.0
     J2:
         min_angle: 0.0
         max_angle: 45.0

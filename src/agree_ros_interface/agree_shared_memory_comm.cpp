@@ -17,7 +17,7 @@ agree_shared_memory_comm::agree_shared_memory_comm()
 }
 
 agree_shared_memory_comm::~agree_shared_memory_comm(){
-//    detach_shared_memory();
+    detach_shared_memory();
 }
 
 bool agree_shared_memory_comm::init(){
