@@ -21,7 +21,7 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
   while (ros::ok()){
 
     msg.elapsed_time    = esmacat_sm.data->elapsed_time_ms;
-    msg.status          = esmacat_sm.data->agree_status;
+    msg.status          = esmacat_sm.data->control_mode_status;
 
     msg.joint_position_rad.clear();
     msg.joint_speed_rad_s.clear();
@@ -40,7 +40,7 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     loop_rate.sleep();
     interim_roscount++;
 
-    if (esmacat_sm.data->agree_command == 0 || esmacat_sm.data->agree_status == 0)
+    if (esmacat_sm.data->control_mode_command == 0 || esmacat_sm.data->control_mode_status == 0)
     {
       ROS_INFO("AGREE SHM Interface exit conditions met and shutting down..");
       esmacat_sm.detach_shared_memory();
@@ -70,8 +70,7 @@ void esmacat_ros_interface_class::ROS_subscribe_thread(){
 void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg)
 {
   // Save data from ROS message to shared memory
-  esmacat_sm.data->mode                                             = (robot_control_mode_t) msg.command;
-  esmacat_sm.data->agree_command                                    = msg.command;
+  esmacat_sm.data->control_mode_command                             = (robot_control_mode_t) msg.command;
   esmacat_sm.data->arm_weight_compensation_config.weight_assistance = msg.weight_assistance;
 
   for(int joint_index = 0; joint_index < 5; joint_index++){
@@ -116,7 +115,7 @@ void esmacat_ros_interface_class::ROS_parameters_thread(){
   if (n.hasParam("robot_parameters"))
     {
       n.getParam("robot_parameters/starting_mode",mode );
-      esmacat_sm.data->mode = static_cast<robot_control_mode_t>(mode);
+      esmacat_sm.data->control_mode_command = static_cast<robot_control_mode_t>(mode);
 
       for (int joint_index=0;joint_index<5;joint_index++){
 

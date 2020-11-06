@@ -31,14 +31,13 @@ class agree_shared_memory_comm
         bool use_testbed = 0;
 
         bool stop = false;
-        robot_control_mode_t mode = robot_control_mode_t::standby;
+        robot_control_mode_t control_mode_command = robot_control_mode_t::standby;
+        robot_control_mode_t control_mode_status = robot_control_mode_t::standby;
+
         int exercise_num = 0;
         int right_exercise_num = 0 ;
         int left_exercise_num = 0;
         uint64_t loop_cnt = 0;              // count of loop
-
-        uint16_t agree_command;
-        uint64_t agree_status;
 
     };
 
@@ -56,9 +55,8 @@ public:
     key_t get_shared_memory_key(){return key;}
     void detach_shared_memory();
 
-    void set_esmacat_command(uint64_t command){data->agree_command = command;}
-    void set_esmacat_status(uint64_t status){data->agree_status = status;}
-    void set_esmacat_mode(robot_control_mode_t mode){data->mode = mode;}
+    void set_esmacat_command(robot_control_mode_t command){data->control_mode_command = command;}
+    void set_esmacat_status(robot_control_mode_t status){data->control_mode_status = status;}
 };
 
 #endif // AGREE_ESMACAT_SHARED_MEMORY_COMM_H
