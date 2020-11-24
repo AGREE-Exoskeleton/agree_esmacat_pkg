@@ -28,7 +28,7 @@ class agree_shared_memory_comm
         double elapsed_time_ms = 0;
         int last_joint_index = 0;
         int err_msg_count = 0;
-        bool use_testbed = 0;
+        bool use_ros = 0;
 
         bool stop = false;
         robot_control_mode_t control_mode_command = robot_control_mode_t::standby;
@@ -57,6 +57,8 @@ public:
 
     void set_esmacat_command(robot_control_mode_t command){data->control_mode_command = command;}
     void set_esmacat_status(robot_control_mode_t status){data->control_mode_status = status;}
+    void set_use_ros(bool boolean){data->use_ros = boolean;}
+
 };
 
 #endif // AGREE_ESMACAT_SHARED_MEMORY_COMM_H

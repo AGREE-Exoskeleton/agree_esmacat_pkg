@@ -49,6 +49,7 @@ public:
         // Initialize command and status
         esmacat_sm.set_esmacat_command(robot_control_mode_t::standby);
         esmacat_sm.set_esmacat_status(robot_control_mode_t::standby);
+        esmacat_sm.set_use_ros(true);
 
 
         // Start Boost threads

@@ -1,3 +1,4 @@
 <launch>
+<rosparam command="load" file="$(find agree_esmacat_pkg)/config/parameters.yaml" />
 <node pkg="agree_esmacat_pkg" name="shared_memory_interface" type="agree_ros_interface" output="screen" />
 </launch>
