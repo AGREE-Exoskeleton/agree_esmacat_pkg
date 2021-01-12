@@ -9,3 +9,5 @@ add_dependencies(${THIS_APP_NAME} agree_esmacat_pkg_generate_messages_cpp)
 target_link_libraries(${THIS_APP_NAME} ${catkin_LIBRARIES})
 
 install(TARGETS ${THIS_APP_NAME} DESTINATION ./bin)
+
+
