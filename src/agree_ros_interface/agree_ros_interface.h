@@ -14,7 +14,7 @@
 #include "std_msgs/Float64.h"
 #include "std_msgs/String.h"
 
-#include "esmacat_applications/agree_mini_torque_driver/agree_joint_structs.h"
+#include "esmacat_applications/agree_esmacat_rt/agree_joint_structs.h"
 #include "agree_shared_memory_comm.h"
 
 

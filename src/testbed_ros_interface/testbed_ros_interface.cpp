@@ -49,7 +49,6 @@ void testbed_ros_interface::ROS_publish_thread(){
     pub_esmacat_write.publish(msg);
 
     write2file();
-
     loop_rate.sleep();
   }
 
@@ -122,10 +121,10 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
 
       case 't': case 'T':
-        if (commanded_state != PASSIVE)
+        if (commanded_state != TORQUE)
         {
-          std::cout << green_key << "Quick-swapped to PASSIVE mode!" << color_key << std::endl;
-          commanded_state = PASSIVE;
+          std::cout << green_key << "Quick-swapped to TORQUE mode!" << color_key << std::endl;
+          commanded_state = TORQUE;
           interim_swap_state = true;
         }
         else
@@ -968,7 +967,7 @@ void testbed_ros_interface::print_command_keys()
   std::cout << blue_key << "\'h\'" << color_key << ": HOMING mode"<< "\n";
   std::cout << blue_key << "\'p\'" << color_key << ": POSITION mode"<< "\n";
 
-  std::cout << blue_key << "\'t\'" << color_key << ": PASSIVE mode"<< "\n";
+  std::cout << blue_key << "\'t\'" << color_key << ": TORQUE mode"<< "\n";
   std::cout << blue_key << "\'i\'" << color_key << ": IMPEDANCE EXTERNAL mode"<< "\n";
   std::cout << blue_key << "\'w\'" << color_key << ": ANTI-G mode"<< "\n";
   std::cout << blue_key << "\'g\'" << color_key << ": TRANSPARENT mode"<< "\n";
