@@ -6,14 +6,12 @@
 
 void testbed_ros_interface::ROS_publish_thread(){
 
-  // Declare timespec variables
-  struct timespec t0,temp,timestamp;
-  // Get t0
-  clock_gettime( CLOCK_REALTIME, &t0);
-
   //Declare a message and setup the publisher for that message
   ros::NodeHandle n;
   ros::Rate loop_rate(100);
+  ros::Time begin = ros::Time::now();
+  ros::Duration time;
+
   agree_esmacat_pkg::agree_esmacat_command msg;
 
   // Create Publisher Object and Topic
@@ -21,7 +19,6 @@ void testbed_ros_interface::ROS_publish_thread(){
 
   //Variables that setup the publishing loop
   int interim_roscount = 0;
-  double sine = 0;
 
   openfile();
 
@@ -42,9 +39,8 @@ void testbed_ros_interface::ROS_publish_thread(){
 
 
     // Compute timestamp
-    clock_gettime( CLOCK_REALTIME, &temp);
-    timestamp = diff(t0,temp);
-    msg.timestamp = (float)(timestamp.tv_sec);
+    time = ros::Time::now() - begin;
+    msg.timestamp = static_cast<double>(time.toNSec()/1000000.0);
 
     pub_esmacat_write.publish(msg);
 
