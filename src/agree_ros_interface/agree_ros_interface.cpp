@@ -158,21 +158,19 @@ void esmacat_ros_interface_class::ROS_parameters_thread(){
     ROS_ERROR("Failed to get ROS parameters 'user_parameters'");
   }
 
-//  bool side;
-//  if (n.hasParam("side"))
-//    {
-//      n.getParam("side",side );
+  int side;
+  if (n.hasParam("side"))
+    {
+      n.getParam("side",side );
 
-//      esmacat_sm.data->arm_weight_compensation_config.side = side;
+      esmacat_sm.data->arm_weight_compensation_config.side = side;
 
-
-//      ROS_INFO("AGREE Side Parameters");
-//      cout << "I read side " << side << endl;
-//    }
-//  else
-//  {
-//    ROS_ERROR("Failed to get ROS parameters 'side'");
-//  }
+      ROS_INFO("AGREE Side Parameters");
+    }
+  else
+  {
+    ROS_ERROR("Failed to get ROS parameters 'side'");
+  }
 
 }
 
