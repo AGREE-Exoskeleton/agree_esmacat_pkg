@@ -119,7 +119,7 @@ void esmacat_ros_interface_class::ROS_parameters_thread(){
   int mode;
   float lower_soft_stop, upper_soft_stop;
   float weight,height,forearm_length,upperarm_length;
-  bool side;
+  int side;
 
   while(ros::ok()){
 //  if (n.hasParam("robot_parameters"))
