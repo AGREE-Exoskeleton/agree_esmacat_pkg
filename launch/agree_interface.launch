@@ -1,5 +1,4 @@
 <launch>
-<rosparam command="load" file="$(find agree_esmacat_pkg)/config/parameters.yaml" />
 
 <rosparam file="$(find agree_fsm_pkg)/config/point.yaml" />
 <rosparam file="$(find agree_fsm_pkg)/config/exercise.yaml" />
