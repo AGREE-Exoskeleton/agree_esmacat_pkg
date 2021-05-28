@@ -105,71 +105,73 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 void esmacat_ros_interface_class::ROS_parameters_thread(){
 
   //Setup a subscriber that will get data from other ROS nodes
-  ros::MultiThreadedSpinner spinner(0); // Use 4 threads
+//  ros::MultiThreadedSpinner spinner(0); // Use 4 threads
 
   ros::NodeHandle n;
+  ros::Rate loop_rate(1);
+  // TODO: fix timer to read parameters
+//  ros::Timer timer = n.createTimer(ros::Duration(1), timerCallback);
 
   int mode;
   float lower_soft_stop, upper_soft_stop;
-
-  if (n.hasParam("robot_parameters"))
-    {
-      n.getParam("robot_parameters/starting_mode",mode );
-      esmacat_sm.data->control_mode_command = static_cast<robot_control_mode_t>(mode);
-
-      for (int joint_index=0;joint_index<5;joint_index++){
-
-          char parameter [50];
-
-          sprintf(parameter,"robot_parameters/J%d/min_angle",joint_index+1);
-          n.getParam(parameter,lower_soft_stop);
-
-          sprintf(parameter,"robot_parameters/J%d/max_angle",joint_index+1);
-          n.getParam(parameter,upper_soft_stop);
-
-          esmacat_sm.data->impedance_control_command[joint_index].soft_stop_lower_limit_rad = lower_soft_stop;
-          esmacat_sm.data->impedance_control_command[joint_index].soft_stop_upper_limit_rad = upper_soft_stop;
-      }
-
-      ROS_INFO("AGREE Robot Parameters");
-    }
-  else
-  {
-      ROS_ERROR("Failed to get ROS parameters 'robot_parameters'");
-  }
-
   float weight,height,forearm_length,upperarm_length;
-  if (n.hasParam("user_parameters"))
+  bool side;
+
+  while(ros::ok()){
+//  if (n.hasParam("robot_parameters"))
+//    {
+//      n.getParam("robot_parameters/starting_mode",mode );
+//      esmacat_sm.data->control_mode_command = static_cast<robot_control_mode_t>(mode);
+
+//      for (int joint_index=0;joint_index<5;joint_index++){
+
+//          char parameter [50];
+
+//          sprintf(parameter,"robot_parameters/J%d/min_angle",joint_index+1);
+//          n.getParam(parameter,lower_soft_stop);
+
+//          sprintf(parameter,"robot_parameters/J%d/max_angle",joint_index+1);
+//          n.getParam(parameter,upper_soft_stop);
+
+//          esmacat_sm.data->impedance_control_command[joint_index].soft_stop_lower_limit_rad = lower_soft_stop;
+//          esmacat_sm.data->impedance_control_command[joint_index].soft_stop_upper_limit_rad = upper_soft_stop;
+//      }
+
+//      ROS_INFO("AGREE Robot Parameters");
+//    }
+//  else
+//  {
+//      ROS_ERROR("Failed to get ROS parameters 'robot_parameters'");
+//  }
+
+  if (n.hasParam("physiological_param"))
     {
-      n.getParam("user_parameters/weight",weight );
-      n.getParam("user_parameters/height",height );
-      n.getParam("user_parameters/forearm_length",forearm_length );
-      n.getParam("user_parameters/upperarm_length",upperarm_length );
+      n.getParam("physiological_param/weight",weight );
+      n.getParam("physiological_param/height",height );
+      n.getParam("physiological_param/forearm_length",forearm_length );
+      n.getParam("physiological_param/upperarm_length",upperarm_length );
 
       esmacat_sm.data->arm_weight_compensation_config.human_weight_kg  =   weight;
       esmacat_sm.data->arm_weight_compensation_config.human_height_m   =   height;
       esmacat_sm.data->arm_weight_compensation_config.forearm_length_m =   forearm_length;
       esmacat_sm.data->arm_weight_compensation_config.upperarm_length_m =  upperarm_length;
-
-      ROS_INFO("AGREE User Parameters");
     }
   else
   {
     ROS_ERROR("Failed to get ROS parameters 'user_parameters'");
   }
 
-  int side;
   if (n.hasParam("side"))
     {
       n.getParam("side",side );
-
       esmacat_sm.data->arm_weight_compensation_config.side = side;
-
-      ROS_INFO("AGREE Side Parameters");
+      cout << side << endl;
     }
   else
   {
     ROS_ERROR("Failed to get ROS parameters 'side'");
+  }
+  loop_rate.sleep();
   }
 
 }
