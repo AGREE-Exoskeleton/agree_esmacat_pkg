@@ -71,7 +71,11 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 {
   // Save data from ROS message to shared memory
   esmacat_sm.data->control_mode_command                             = (robot_control_mode_t) msg.command;
-  esmacat_sm.data->arm_weight_compensation_config.weight_assistance = msg.weight_assistance;
+
+  // Save weight assistance gains to shared memory
+  // TODO: save also second gain
+  esmacat_sm.data->arm_weight_compensation_config.weight_assistance = msg.weight_assistance[0];
+
 
   for(int joint_index = 0; joint_index < 5; joint_index++){
       esmacat_sm.data->impedance_control_command[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];

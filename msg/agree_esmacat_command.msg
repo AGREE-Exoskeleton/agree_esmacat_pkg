@@ -3,7 +3,7 @@ float64 timestamp
 float64[] setpoint
 float64[] stiffness_k
 float64[] damping_d
-float64 weight_assistance
+float64[] weight_assistance
 int16 gui_mode
 int8 exercise
 int8 task

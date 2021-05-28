@@ -25,7 +25,7 @@ void testbed_ros_interface::ROS_publish_thread(){
   while (ros::ok()){
 
       msg.command             = interim_command;
-      msg.weight_assistance   = interim_weight_assistance;
+      msg.weight_assistance[0]   = interim_weight_assistance;
 
       msg.setpoint.clear();
       msg.damping_d.clear();
