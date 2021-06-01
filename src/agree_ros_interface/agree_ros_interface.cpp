@@ -27,12 +27,15 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     msg.joint_speed_rad_s.clear();
     msg.joint_torque_mNm.clear();
     msg.setpoint_torque.clear();
+//    msg.setpoint_position_rad.clear();
+
 
     for(int joint_index=0;joint_index<5;joint_index++){
         msg.joint_position_rad.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_reading_radians);
         msg.joint_speed_rad_s.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_speed_radians_sec);
         msg.joint_torque_mNm.push_back(esmacat_sm.data->joint_values[joint_index].filtered_load_mNm);
         msg.setpoint_torque.push_back(esmacat_sm.data->impedance_control_terms[joint_index].torque_setpoint_mNm);
+//        msg.setpoint_position_rad.push_back(esmacat_sm.data->impedance_control_terms[joint_index].impedance_control_setpoint_rad);
     }
 
     publisher.publish(msg);
@@ -74,7 +77,8 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 
   // Save weight assistance gains to shared memory
   // TODO: save also second gain
-  esmacat_sm.data->arm_weight_compensation_config.weight_assistance = msg.weight_assistance[0];
+  esmacat_sm.data->arm_weight_compensation_config.upperarm_weight_assistance = msg.weight_assistance[0];
+  esmacat_sm.data->arm_weight_compensation_config.forearm_weight_assistance = msg.weight_assistance[1];
 
 
   for(int joint_index = 0; joint_index < 5; joint_index++){
@@ -85,7 +89,7 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 
   //Display data from hard real-time loop to the the terminal.
   if(prev_command != msg.command)  {
-    ROS_INFO("Change MODE to: %s",robot_mode_labels[msg.command].c_str());
+    ROS_INFO("Change MODE to: %d",msg.command);
   }
 
   if(prev_damping != msg.damping_d[0]){
@@ -169,7 +173,6 @@ void esmacat_ros_interface_class::ROS_parameters_thread(){
     {
       n.getParam("side",side );
       esmacat_sm.data->arm_weight_compensation_config.side = side;
-      cout << side << endl;
     }
   else
   {
