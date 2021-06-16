@@ -77,7 +77,7 @@ const string green_key = "\033[32m";
 const string color_key = "\033[0m";
 
 //Labels for states
-const string state_labels[] = {
+const string robot_mode_labels[] = {
     "EXIT",
     "STOP",
     "CURRENT",
@@ -107,7 +107,7 @@ public:
     boost_ROS_command_thread  = boost::thread(&testbed_ros_interface::ROS_command_thread, this);
     boost_adaptive_control_thread  = boost::thread(&testbed_ros_interface::control_thread, this);
 
-    std::cout << "ROS interface objects instantiated" << std::endl;
+    ROS_INFO("AGREE TestBed Manager objects instantiated");
     interim_command                  = STOP;
     interim_impedance_stiffness     = 0;
     interim_impedance_damping       = 0;
@@ -146,10 +146,9 @@ public:
   }
 
   // Command variables
-  uint64_t interim_command;
-  uint64_t interim_exercise_status = REST;
+  uint16_t interim_command;
+  uint16_t interim_exercise_status = REST;
   float    interim_exercise_counter = 0;
-
   bool      interim_swap_state;
 
   // Impedance Parameters

@@ -118,8 +118,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     # INCLUDE_DIRS include
-    LIBRARIES esmacat_ros_interface
-    CATKIN_DEPENDS roscpp
+    LIBRARIES agree_esmacat_pkg
+    CATKIN_DEPENDS roscpp message_runtime
     #  DEPENDS system_lib
     )
 
@@ -133,18 +133,19 @@ include_directories(
     # include
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+#    home/esmacat/esmacat_rt/esmacat_master_high_performance #TODO Decomment in Esmacat RT
     #  include/${PROJECT_NAME}
     )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/esmacat_ros_interface.cpp
-# )
+ add_library(${PROJECT_NAME}
+   src/smartbox_ros_interface/smartbox_ros_interface.cpp
+ )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -194,11 +195,11 @@ include_directories(
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-# install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
+ install(TARGETS ${PROJECT_NAME}
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+ )
 
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
@@ -228,5 +229,7 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_subdirectory(src/smartbox_ros_interface)
-add_subdirectory(src/esmacat_ros_interface)
 add_subdirectory(src/testbed_ros_interface)
+add_subdirectory(src/agree_ros_interface)
+add_subdirectory(src/agree_shared_memory_interface)
+

@@ -6,14 +6,12 @@
 
 void testbed_ros_interface::ROS_publish_thread(){
 
-  // Declare timespec variables
-  struct timespec t0,temp,timestamp;
-  // Get t0
-  clock_gettime( CLOCK_REALTIME, &t0);
-
   //Declare a message and setup the publisher for that message
   ros::NodeHandle n;
   ros::Rate loop_rate(100);
+  ros::Time begin = ros::Time::now();
+  ros::Duration time;
+
   agree_esmacat_pkg::agree_esmacat_command msg;
 
   // Create Publisher Object and Topic
@@ -21,14 +19,13 @@ void testbed_ros_interface::ROS_publish_thread(){
 
   //Variables that setup the publishing loop
   int interim_roscount = 0;
-  double sine = 0;
 
   openfile();
 
   while (ros::ok()){
 
       msg.command             = interim_command;
-      msg.weight_assistance   = interim_weight_assistance;
+      msg.weight_assistance[0]   = interim_weight_assistance;
 
       msg.setpoint.clear();
       msg.damping_d.clear();
@@ -42,14 +39,12 @@ void testbed_ros_interface::ROS_publish_thread(){
 
 
     // Compute timestamp
-    clock_gettime( CLOCK_REALTIME, &temp);
-    timestamp = diff(t0,temp);
-    msg.timestamp = (float)(timestamp.tv_sec);
+    time = ros::Time::now() - begin;
+    msg.timestamp = static_cast<double>(time.toNSec()/1000000.0);
 
     pub_esmacat_write.publish(msg);
 
     write2file();
-
     loop_rate.sleep();
   }
 
@@ -122,10 +117,10 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
 
       case 't': case 'T':
-        if (commanded_state != PASSIVE)
+        if (commanded_state != TORQUE)
         {
-          std::cout << green_key << "Quick-swapped to PASSIVE mode!" << color_key << std::endl;
-          commanded_state = PASSIVE;
+          std::cout << green_key << "Quick-swapped to TORQUE mode!" << color_key << std::endl;
+          commanded_state = TORQUE;
           interim_swap_state = true;
         }
         else
@@ -365,7 +360,7 @@ void testbed_ros_interface::ROS_command_thread(){
         break;
       }
 
-      interim_command = (uint64_t) commanded_state;
+      interim_command = (uint8_t) commanded_state;
 
       if(!interim_command) {
           closefile();
@@ -380,7 +375,7 @@ void testbed_ros_interface::ROS_command_thread(){
     }
     else
     {
-      std::cout << yellow_key << state_labels[commanded_state] << color_key << " is the state currently active" << std::endl << std::endl;
+      std::cout << yellow_key << robot_mode_labels[commanded_state] << color_key << " is the state currently active" << std::endl << std::endl;
     } // else
 
   } // while
@@ -968,7 +963,7 @@ void testbed_ros_interface::print_command_keys()
   std::cout << blue_key << "\'h\'" << color_key << ": HOMING mode"<< "\n";
   std::cout << blue_key << "\'p\'" << color_key << ": POSITION mode"<< "\n";
 
-  std::cout << blue_key << "\'t\'" << color_key << ": PASSIVE mode"<< "\n";
+  std::cout << blue_key << "\'t\'" << color_key << ": TORQUE mode"<< "\n";
   std::cout << blue_key << "\'i\'" << color_key << ": IMPEDANCE EXTERNAL mode"<< "\n";
   std::cout << blue_key << "\'w\'" << color_key << ": ANTI-G mode"<< "\n";
   std::cout << blue_key << "\'g\'" << color_key << ": TRANSPARENT mode"<< "\n";
@@ -988,9 +983,9 @@ void testbed_ros_interface::print_command_keys()
 
 void testbed_ros_interface::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_status msg)
 {
-    interim_position = msg.joint_position[0];
-    interim_speed    = msg.joint_velocity[0];
-    interim_torque   = msg.joint_torque[0];
+    interim_position = msg.joint_position_rad[0];
+    interim_speed    = msg.joint_speed_rad_s[0];
+    interim_torque   = msg.joint_torque_mNm[0];
 
     interim_elapsed_time = msg.elapsed_time;
   //Display data from hard real-time loop to the the terminal.
