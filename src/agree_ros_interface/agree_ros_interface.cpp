@@ -26,16 +26,16 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     msg.joint_position_rad.clear();
     msg.joint_speed_rad_s.clear();
     msg.joint_torque_mNm.clear();
-    msg.setpoint_torque.clear();
-//    msg.setpoint_position_rad.clear();
+    msg.setpoint_torque_mNm.clear();
+    msg.setpoint_position_rad.clear();
 
 
     for(int joint_index=0;joint_index<5;joint_index++){
         msg.joint_position_rad.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_reading_radians);
         msg.joint_speed_rad_s.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_speed_radians_sec);
         msg.joint_torque_mNm.push_back(esmacat_sm.data->joint_values[joint_index].filtered_load_mNm);
-        msg.setpoint_torque.push_back(esmacat_sm.data->impedance_control_terms[joint_index].torque_setpoint_mNm);
-//        msg.setpoint_position_rad.push_back(esmacat_sm.data->impedance_control_terms[joint_index].impedance_control_setpoint_rad);
+        msg.setpoint_torque_mNm.push_back(esmacat_sm.data->impedance_control_terms[joint_index].torque_setpoint_mNm);
+        msg.setpoint_position_rad.push_back(esmacat_sm.data->impedance_control_terms[joint_index].impedance_control_setpoint_rad);
     }
 
     publisher.publish(msg);
@@ -81,28 +81,52 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   esmacat_sm.data->arm_weight_compensation_config.forearm_weight_assistance = msg.weight_assistance[1];
 
 
-  for(int joint_index = 0; joint_index < 5; joint_index++){
+  for(unsigned long joint_index = 0; joint_index < 5; joint_index++){
       esmacat_sm.data->impedance_control_command[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];
       esmacat_sm.data->impedance_control_command[joint_index].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d[joint_index];
       esmacat_sm.data->impedance_control_command[joint_index].impedance_control_setpoint_rad               = msg.setpoint[joint_index];
   }
 
-  //Display data from hard real-time loop to the the terminal.
+  //Check if command is updated by ROS commands.
   if(prev_command != msg.command)  {
     ROS_INFO("Change MODE to: %d",msg.command);
   }
 
-  if(prev_damping != msg.damping_d[0]){
-    ROS_INFO("Change DAMPING to: %f",msg.damping_d[0]);
+
+
+  //Check if damping or stiffness values are updated by ROS commands.
+  bool damping_updated = false;
+  bool stiffness_updated = false;
+  for(unsigned long joint_index = 0; joint_index < 5; joint_index++){
+    if(abs(prev_damping[joint_index] - msg.damping_d[joint_index])>1E-3) damping_updated = true;
+    if(abs(prev_stiffness[joint_index] - msg.stiffness_k[joint_index])>1E-3) stiffness_updated = true;
   }
 
-  if(prev_stiffness != msg.stiffness_k[0]){
-    ROS_INFO("Change STIFFNESS to: %f",msg.stiffness_k[0]);
+  // Check if weight assistance is updated by ROS commands.
+  bool weight_assistance_updated = false;
+  for(unsigned long segment_index = 0; segment_index < 2 ; segment_index++){
+    if(abs(prev_weight_assistance[segment_index] - msg.weight_assistance[segment_index])>1E-3) weight_assistance_updated = true;
   }
 
-  prev_command   = msg.command;
-  prev_stiffness = msg.stiffness_k[0];
-  prev_damping   = msg.damping_d[0];
+  // If damping, stiffness or weight assistance values are updated raise ROS info.
+  if(damping_updated){
+    ROS_INFO("Update DAMPING to: %.2f %.2f %.2f %.2f %.2f ",msg.damping_d[0],msg.damping_d[1],msg.damping_d[2],msg.damping_d[3],msg.damping_d[4]);
+  }
+  if(stiffness_updated){
+    ROS_INFO("Update STIFFNESS to: %.2f %.2f %.2f %.2f %.2f ",msg.stiffness_k[0],msg.stiffness_k[1],msg.stiffness_k[2],msg.stiffness_k[3],msg.stiffness_k[4]);
+  }
+  if(weight_assistance_updated){
+    ROS_INFO("Update WEIGHT ASSISTANCE to: %.2f %.2f",msg.weight_assistance[0],msg.weight_assistance[1]);
+  }
+
+  // Update previous values to be compared in next cycle
+  prev_command                  = msg.command;
+  prev_weight_assistance[0]     = msg.weight_assistance[0];
+  prev_weight_assistance[1]     = msg.weight_assistance[1];
+  for(unsigned long joint_index = 0; joint_index < 5; joint_index++){
+    prev_stiffness[joint_index] = msg.stiffness_k[joint_index];
+    prev_damping[joint_index]   = msg.damping_d[joint_index];
+  }
 }
 
 

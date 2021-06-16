@@ -72,8 +72,9 @@ public:
 private:
 
   uint16_t prev_command;
-  double   prev_stiffness;
-  double   prev_damping;
+  double   prev_stiffness[5];
+  double   prev_damping[5];
+  double   prev_weight_assistance[2];
 
   boost::thread boost_ROS_publish_thread;
   boost::thread boost_ROS_subscribe_thread;
