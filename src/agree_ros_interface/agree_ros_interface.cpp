@@ -42,6 +42,7 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
     loop_rate.sleep();
     interim_roscount++;
+    esmacat_sm.set_use_ros(true);
 
     if (esmacat_sm.data->control_mode_command == 0 || esmacat_sm.data->control_mode_status == 0)
     {
@@ -217,5 +218,6 @@ void esmacat_ros_interface_class::print_command_keys()
   std::cout << blue_key << "\'n\'" << color_key << ": NULL-TORQUE mode" << "\n";
   std::cout << blue_key << "\'g\'" << color_key << ": GRAVITY mode"<< "\n";
   std::cout << blue_key << "\'f\'" << color_key << ": FREEZE mode"<< "\n";
+  std::cout << blue_key << "\'h\'" << color_key << ": HOMING mode"<< "\n";
   std::cout << blue_key << "\'ENTER\'" << color_key << ": SHOW current settings and command keys\n"<< "\n";
 }
