@@ -42,9 +42,11 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
     loop_rate.sleep();
     interim_roscount++;
+
+//    Inform the real-time thread the system is running through ROS
     esmacat_sm.set_use_ros(true);
 
-    if (esmacat_sm.data->control_mode_command == 0 || esmacat_sm.data->control_mode_status == 0)
+    if (esmacat_sm.data->control_mode_command == 0 || esmacat_sm.data->control_mode_status == 0 || ros::master::check() == 0)
     {
       ROS_INFO("AGREE SHM Interface exit conditions met and shutting down..");
       esmacat_sm.detach_shared_memory();

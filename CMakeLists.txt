@@ -228,8 +228,8 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_subdirectory(src/smartbox_ros_interface)
-add_subdirectory(src/testbed_ros_interface)
+#add_subdirectory(src/smartbox_ros_interface)
+#add_subdirectory(src/testbed_ros_interface)
 add_subdirectory(src/agree_ros_interface)
-add_subdirectory(src/agree_shared_memory_interface)
+#add_subdirectory(src/agree_shared_memory_interface)
 

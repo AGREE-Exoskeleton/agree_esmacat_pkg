@@ -1,0 +1,5 @@
+<launch>
+<rosparam file="$(find agree_fsm_pkg)/config/physiological_param.yaml" />
+<param name="side" value="1" />
+<node name="agree_exo" pkg="agree_esmacat_pkg" type="agree_ros_interface" output="screen" />
+</launch>

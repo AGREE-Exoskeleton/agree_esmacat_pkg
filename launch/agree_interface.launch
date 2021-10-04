@@ -1,11 +1,10 @@
 <launch>
 
-<rosparam file="$(find agree_fsm_pkg)/config/point.yaml" />
 <rosparam file="$(find agree_fsm_pkg)/config/exercise.yaml" />
 <rosparam file="$(find agree_fsm_pkg)/config/general.yaml" />
 <rosparam file="$(find agree_fsm_pkg)/config/physiological_param.yaml" />
 <rosparam file="$(find agree_fsm_pkg)/config/evaluation.yaml" />
 <rosparam file="$(find agree_fsm_pkg)/config/test.yaml" />
 
-<node pkg="agree_esmacat_pkg" name="shared_memory_interface" type="agree_ros_interface" output="screen" />
+<node name="shared_memory_interface" pkg="agree_esmacat_pkg" type="agree_ros_interface" output="screen" />
 </launch>
