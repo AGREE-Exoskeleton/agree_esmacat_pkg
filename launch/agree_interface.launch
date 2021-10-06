@@ -1,10 +1,4 @@
 <launch>
-
-<rosparam file="$(find agree_fsm_pkg)/config/exercise.yaml" />
-<rosparam file="$(find agree_fsm_pkg)/config/general.yaml" />
-<rosparam file="$(find agree_fsm_pkg)/config/physiological_param.yaml" />
-<rosparam file="$(find agree_fsm_pkg)/config/evaluation.yaml" />
-<rosparam file="$(find agree_fsm_pkg)/config/test.yaml" />
-
+<param name="side" value="1" />
 <node name="shared_memory_interface" pkg="agree_esmacat_pkg" type="agree_ros_interface" output="screen" />
 </launch>
