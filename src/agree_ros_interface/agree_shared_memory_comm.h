@@ -28,7 +28,7 @@ class agree_shared_memory_comm
         double elapsed_time_ms = 0;
         int last_joint_index = 0;
         int err_msg_count = 0;
-        bool use_ros = 0;
+        bool use_ros = false;
 
         bool stop = false;
         robot_control_mode_t control_mode_command = robot_control_mode_t::standby;

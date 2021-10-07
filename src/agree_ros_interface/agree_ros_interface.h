@@ -51,12 +51,8 @@ public:
         esmacat_sm.set_esmacat_status(robot_control_mode_t::standby);
         esmacat_sm.set_use_ros(true);
 
-
-        // Start Boost threads
+        // Start Boost thread
         boost_ROS_publish_thread    = boost::thread(&esmacat_ros_interface_class::ROS_publish_thread, this);
-        boost_ROS_subscribe_thread  = boost::thread(&esmacat_ros_interface_class::ROS_subscribe_thread, this);
-        boost_ROS_parameters_thread  = boost::thread(&esmacat_ros_interface_class::ROS_parameters_thread, this);
-
 
         ROS_INFO("AGREE SHM Interface threads instantiated");
     }
@@ -64,7 +60,6 @@ public:
   ~esmacat_ros_interface_class()
   {
     boost_ROS_publish_thread.join();
-    boost_ROS_subscribe_thread.join();
   }
 
   agree_shared_memory_comm esmacat_sm;
@@ -77,18 +72,14 @@ private:
   double   prev_weight_assistance[2];
 
   boost::thread boost_ROS_publish_thread;
-  boost::thread boost_ROS_subscribe_thread;
-  boost::thread boost_ROS_parameters_thread;
 
   void ROS_subscribe_thread();
   void ROS_publish_thread();
   void ROS_parameters_thread();
 
-
+public:
+  void ROS_parameters_callback(const ros::TimerEvent& event);
   void ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg);
-
-  void print_command_keys();
-
 
 };
 

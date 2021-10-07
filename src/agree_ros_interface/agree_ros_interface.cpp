@@ -18,7 +18,12 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
   //Variables that setup the publishing loop
   int interim_roscount = 0;
 
+  //    Inform the real-time thread the system is running through ROS
+  ROS_WARN("ROS enabled.");
+
   while (ros::ok()){
+
+    esmacat_sm.set_use_ros(true);
 
     msg.elapsed_time    = esmacat_sm.data->elapsed_time_ms;
     msg.status          = esmacat_sm.data->control_mode_status;
@@ -43,11 +48,12 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     loop_rate.sleep();
     interim_roscount++;
 
-//    Inform the real-time thread the system is running through ROS
-    esmacat_sm.set_use_ros(true);
+
 
     if (esmacat_sm.data->control_mode_command == 0 || esmacat_sm.data->control_mode_status == 0 || ros::master::check() == 0)
     {
+      esmacat_sm.set_use_ros(false);
+      ROS_WARN("ROS disabled.");
       ROS_INFO("AGREE SHM Interface exit conditions met and shutting down..");
       esmacat_sm.detach_shared_memory();
       ros::shutdown();
@@ -57,21 +63,9 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
 }
 
-/************************/
-/* ROS Subscriber Thread */
-/************************/
-
-void esmacat_ros_interface_class::ROS_subscribe_thread(){
-
-  //Setup a subscriber that will get data from other ROS nodes
-  ros::MultiThreadedSpinner spinner(1); // Use 4 threads
-
-  ros::NodeHandle n;
-
-  ros::Subscriber subscriber = n.subscribe("esmacat/command", 1000, &esmacat_ros_interface_class::ROS_subscribe_callback, this);
-
-  spinner.spin();
-}
+/***************************/
+/* ROS Subscriber Callback */
+/***************************/
 
 void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg::agree_esmacat_command msg)
 {
@@ -79,7 +73,6 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   esmacat_sm.data->control_mode_command                             = (robot_control_mode_t) msg.command;
 
   // Save weight assistance gains to shared memory
-  // TODO: save also second gain
   esmacat_sm.data->arm_weight_compensation_config.upperarm_weight_assistance = msg.weight_assistance[0];
   esmacat_sm.data->arm_weight_compensation_config.forearm_weight_assistance = msg.weight_assistance[1];
 
@@ -94,8 +87,6 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   if(prev_command != msg.command)  {
     ROS_INFO("Change MODE to: %d",msg.command);
   }
-
-
 
   //Check if damping or stiffness values are updated by ROS commands.
   bool damping_updated = false;
@@ -133,26 +124,24 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 }
 
 
-/************************/
-/* ROS Parameters Thread */
-/************************/
+/***************************/
+/* ROS Parameters Callback */
+/***************************/
+/**
+ * @brief esmacat_ros_interface_class::ROS_parameters_callback
+ * @param event
+ * This callback function updates the shared-memory variables with ROS parameters
+ */
+void esmacat_ros_interface_class::ROS_parameters_callback(const ros::TimerEvent& event){
 
-void esmacat_ros_interface_class::ROS_parameters_thread(){
-
-  //Setup a subscriber that will get data from other ROS nodes
-//  ros::MultiThreadedSpinner spinner(0); // Use 4 threads
-
-  ros::NodeHandle n;
-  ros::Rate loop_rate(1);
-  // TODO: fix timer to read parameters
-//  ros::Timer timer = n.createTimer(ros::Duration(1), timerCallback);
+  // ROS handler
+  ros::NodeHandle nh;
 
   int mode;
   float lower_soft_stop, upper_soft_stop;
-  float weight,height,forearm_length,upperarm_length;
+  float weight,height,length_forearm,length_upperarm,length_hand;
   int side;
 
-  while(ros::ok()){
 //  if (n.hasParam("robot_parameters"))
 //    {
 //      n.getParam("robot_parameters/starting_mode",mode );
@@ -179,47 +168,33 @@ void esmacat_ros_interface_class::ROS_parameters_thread(){
 //      ROS_ERROR("Failed to get ROS parameters 'robot_parameters'");
 //  }
 
-  if (n.hasParam("physiological_param"))
+  if (nh.hasParam("physiological_param"))
     {
-      n.getParam("physiological_param/weight",weight );
-      n.getParam("physiological_param/height",height );
-      n.getParam("physiological_param/forearm_length",forearm_length );
-      n.getParam("physiological_param/upperarm_length",upperarm_length );
+      nh.getParam("physiological_param/weight",weight );
+      nh.getParam("physiological_param/height",height );
+      nh.getParam("physiological_param/length_forearm",length_forearm );
+      nh.getParam("physiological_param/length_upperarm",length_upperarm );
+      nh.getParam("physiological_param/length_hand",length_hand );
 
       esmacat_sm.data->arm_weight_compensation_config.human_weight_kg  =   weight;
       esmacat_sm.data->arm_weight_compensation_config.human_height_m   =   height;
-      esmacat_sm.data->arm_weight_compensation_config.forearm_length_m =   forearm_length;
-      esmacat_sm.data->arm_weight_compensation_config.upperarm_length_m =  upperarm_length;
+      esmacat_sm.data->arm_weight_compensation_config.forearm_length_m =   length_forearm;
+      esmacat_sm.data->arm_weight_compensation_config.upperarm_length_m =  length_upperarm;
+      esmacat_sm.data->arm_weight_compensation_config.hand_length_m     =  length_hand;
     }
   else
   {
-    ROS_ERROR("Failed to get ROS parameters 'user_parameters'");
+    ROS_ERROR("Failed to get ROS parameters 'physiological_param'");
   }
 
-  if (n.hasParam("side"))
+  if (nh.hasParam("side"))
     {
-      n.getParam("side",side );
+      nh.getParam("side",side );
       esmacat_sm.data->arm_weight_compensation_config.side = side;
     }
   else
   {
     ROS_ERROR("Failed to get ROS parameters 'side'");
   }
-  loop_rate.sleep();
-  }
 
-}
-
-void esmacat_ros_interface_class::print_command_keys()
-{
-  std::cout << boldred_key << "\nCOMMAND KEYS:"<< color_key << std::endl;
-  std::cout << blue_key << "\'k\'" << color_key << ": exit" << "\n";
-  std::cout << blue_key << "\'s\'" << color_key << ": STOP mode"<< "\n";
-  std::cout << blue_key << "\'c\'" << color_key << ": CURRENT mode"<< "\n";
-  std::cout << blue_key << "\'t\'" << color_key << ": TORQUE mode"<< "\n";
-  std::cout << blue_key << "\'n\'" << color_key << ": NULL-TORQUE mode" << "\n";
-  std::cout << blue_key << "\'g\'" << color_key << ": GRAVITY mode"<< "\n";
-  std::cout << blue_key << "\'f\'" << color_key << ": FREEZE mode"<< "\n";
-  std::cout << blue_key << "\'h\'" << color_key << ": HOMING mode"<< "\n";
-  std::cout << blue_key << "\'ENTER\'" << color_key << ": SHOW current settings and command keys\n"<< "\n";
 }
