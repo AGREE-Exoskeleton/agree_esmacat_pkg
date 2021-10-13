@@ -144,6 +144,8 @@ void esmacat_ros_interface_class::ROS_parameters_callback(__attribute__((unused)
   int length_robot_upperarm = 0;
   int side;
 
+
+// TODO: There should be a check if the ROMs are compatible with the side...
   if (nh.hasParam("physiological_param"))
   {
     // Get ROS parameters for ROM maximum values (motor reference)
@@ -172,7 +174,7 @@ void esmacat_ros_interface_class::ROS_parameters_callback(__attribute__((unused)
   }
 
 
-  // J2 override
+  // NOTE: J2 override
   ROM_max[1] = 0.0/180.0*M_PI;
 
   for (unsigned long joint_index=0;joint_index<5;joint_index++){
