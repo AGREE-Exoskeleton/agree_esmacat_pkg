@@ -36,11 +36,11 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
 
     for(int joint_index=0;joint_index<5;joint_index++){
-        msg.joint_position_rad.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_reading_radians);
-        msg.joint_speed_rad_s.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_speed_radians_sec);
-        msg.joint_torque_mNm.push_back(esmacat_sm.data->joint_values[joint_index].filtered_load_mNm);
-        msg.setpoint_torque_mNm.push_back(esmacat_sm.data->impedance_control_terms[joint_index].torque_setpoint_mNm);
-        msg.setpoint_position_rad.push_back(esmacat_sm.data->impedance_control_terms[joint_index].impedance_control_setpoint_rad);
+      msg.joint_position_rad.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_reading_radians);
+      msg.joint_speed_rad_s.push_back(esmacat_sm.data->joint_values[joint_index].incremental_encoder_speed_radians_sec);
+      msg.joint_torque_mNm.push_back(esmacat_sm.data->joint_values[joint_index].filtered_load_mNm);
+      msg.setpoint_torque_mNm.push_back(esmacat_sm.data->impedance_control_terms[joint_index].torque_setpoint_mNm);
+      msg.setpoint_position_rad.push_back(esmacat_sm.data->impedance_control_terms[joint_index].impedance_control_setpoint_rad);
     }
 
     publisher.publish(msg);
@@ -78,9 +78,9 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
 
 
   for(unsigned long joint_index = 0; joint_index < 5; joint_index++){
-      esmacat_sm.data->impedance_control_command[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];
-      esmacat_sm.data->impedance_control_command[joint_index].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d[joint_index];
-      esmacat_sm.data->impedance_control_command[joint_index].impedance_control_setpoint_rad               = msg.setpoint[joint_index];
+    esmacat_sm.data->impedance_control_command[joint_index].impedance_control_k_gain_mNm_per_rad         = msg.stiffness_k[joint_index];
+    esmacat_sm.data->impedance_control_command[joint_index].impedance_control_d_gain_mNm_per_rad_per_sec = msg.damping_d[joint_index];
+    esmacat_sm.data->impedance_control_command[joint_index].impedance_control_setpoint_rad               = msg.setpoint[joint_index];
   }
 
   //Check if command is updated by ROS commands.
@@ -132,57 +132,71 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
  * @param event
  * This callback function updates the shared-memory variables with ROS parameters
  */
-void esmacat_ros_interface_class::ROS_parameters_callback(const ros::TimerEvent& event){
+void esmacat_ros_interface_class::ROS_parameters_callback(__attribute__((unused)) const ros::TimerEvent& event){
 
   // ROS handler
   ros::NodeHandle nh;
 
-  int mode;
-  float lower_soft_stop, upper_soft_stop;
+  // Declar ROM vectors
+  std::vector<float> ROM_max,ROM_min;
+
   float weight,height,length_forearm,length_upperarm,length_hand;
   int length_robot_upperarm = 0;
   int side;
 
-//  if (n.hasParam("robot_parameters"))
-//    {
-//      n.getParam("robot_parameters/starting_mode",mode );
-//      esmacat_sm.data->control_mode_command = static_cast<robot_control_mode_t>(mode);
+  if (nh.hasParam("physiological_param"))
+  {
+    // Get ROS parameters for ROM maximum values (motor reference)
+    if( !nh.getParam("/physiological_param/ROM_Max", ROM_max) )
+      ROS_ERROR("Failed to get ROM Max parameters from server.");
+    else{
+      cout << "ROM Max: ";
+      for (auto i: ROM_max)
+        std::cout << i << ' ';
+      cout << endl;
+    }
 
-//      for (int joint_index=0;joint_index<5;joint_index++){
+    // Get ROS parameters for ROM minimum values (motor reference)
+    if( !nh.getParam("/physiological_param/ROM_Min", ROM_min) )
+      ROS_ERROR("Failed to get ROM Min parameters from server.");
+    else{
+      cout << "ROM Min: ";
+      for (auto i: ROM_min)
+        std::cout << i << ' ';
+      cout << endl;
+    }
+  }
+  else
+  {
+    ROS_ERROR("Failed to get ROS parameters 'physiological_param'");
+  }
 
-//          char parameter [50];
 
-//          sprintf(parameter,"robot_parameters/J%d/min_angle",joint_index+1);
-//          n.getParam(parameter,lower_soft_stop);
+  // J2 override
+  ROM_max[1] = 0.0/180.0*M_PI;
 
-//          sprintf(parameter,"robot_parameters/J%d/max_angle",joint_index+1);
-//          n.getParam(parameter,upper_soft_stop);
+  for (unsigned long joint_index=0;joint_index<5;joint_index++){
+    // TODO: Check conversion to robot min/max...
+    esmacat_sm.data->impedance_control_command[joint_index].soft_stop_lower_limit_rad = ROM_min[joint_index];
+    esmacat_sm.data->impedance_control_command[joint_index].soft_stop_upper_limit_rad = ROM_max[joint_index];
+  }
 
-//          esmacat_sm.data->impedance_control_command[joint_index].soft_stop_lower_limit_rad = lower_soft_stop;
-//          esmacat_sm.data->impedance_control_command[joint_index].soft_stop_upper_limit_rad = upper_soft_stop;
-//      }
 
-//      ROS_INFO("AGREE Robot Parameters");
-//    }
-//  else
-//  {
-//      ROS_ERROR("Failed to get ROS parameters 'robot_parameters'");
-//  }
 
   if (nh.hasParam("physiological_param"))
-    {
-      nh.getParam("physiological_param/weight",weight );
-      nh.getParam("physiological_param/height",height );
-      nh.getParam("physiological_param/length_forearm",length_forearm );
-      nh.getParam("physiological_param/length_upperarm",length_upperarm );
-      nh.getParam("physiological_param/length_hand",length_hand );
+  {
+    nh.getParam("physiological_param/weight",weight );
+    nh.getParam("physiological_param/height",height );
+    nh.getParam("physiological_param/length_forearm",length_forearm );
+    nh.getParam("physiological_param/length_upperarm",length_upperarm );
+    nh.getParam("physiological_param/length_hand",length_hand );
 
-      esmacat_sm.data->arm_weight_compensation_config.human_weight_kg  =   weight;
-      esmacat_sm.data->arm_weight_compensation_config.human_height_m   =   height;
-      esmacat_sm.data->arm_weight_compensation_config.forearm_length_m =   length_forearm;
-      esmacat_sm.data->arm_weight_compensation_config.upperarm_length_m =  length_upperarm;
-      esmacat_sm.data->arm_weight_compensation_config.hand_length_m     =  length_hand;
-    }
+    esmacat_sm.data->arm_weight_compensation_config.human_weight_kg  =   weight;
+    esmacat_sm.data->arm_weight_compensation_config.human_height_m   =   height;
+    esmacat_sm.data->arm_weight_compensation_config.forearm_length_m =   length_forearm;
+    esmacat_sm.data->arm_weight_compensation_config.upperarm_length_m =  length_upperarm;
+    esmacat_sm.data->arm_weight_compensation_config.hand_length_m     =  length_hand;
+  }
   else
   {
     ROS_ERROR("Failed to get ROS parameters 'physiological_param'");
@@ -223,10 +237,10 @@ void esmacat_ros_interface_class::ROS_parameters_callback(const ros::TimerEvent&
   }
 
   if (nh.hasParam("side"))
-    {
-      nh.getParam("side",side );
-      esmacat_sm.data->arm_weight_compensation_config.side = side;
-    }
+  {
+    nh.getParam("side",side );
+    esmacat_sm.data->arm_weight_compensation_config.side = side;
+  }
   else
   {
     ROS_ERROR("Failed to get ROS parameters 'side'");

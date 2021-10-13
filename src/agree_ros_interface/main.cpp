@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     esmacat_ros_interface_class ros_interface;
 
     // Create timer for ROS parameters
-    ros::Timer timer = nh.createTimer(ros::Duration(0.1), &esmacat_ros_interface_class::ROS_parameters_callback, &ros_interface);
+    ros::Timer timer = nh.createTimer(ros::Duration(1.0), &esmacat_ros_interface_class::ROS_parameters_callback, &ros_interface);
 
     // Create subscriber for ROS commands
     ros::Subscriber subscriber = nh.subscribe("esmacat/command", 1000, &esmacat_ros_interface_class::ROS_subscribe_callback, &ros_interface);
