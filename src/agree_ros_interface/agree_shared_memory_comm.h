@@ -9,7 +9,7 @@
 #include <sys/shm.h>
 #include <stdio.h>
 #include <iostream>
-#include "esmacat_applications/agree_esmacat_rt/agree_joint_structs.h" // TODO: Fix this dependency in a smarter way
+#include "esmacat_applications/agree_esmacat_rt/agree_joint_structs.h" // FIXME: Fix this dependency in a smarter way
 
 /*****************************************************************************************
  * CLASSES

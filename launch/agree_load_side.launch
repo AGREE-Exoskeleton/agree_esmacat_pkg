@@ -1,0 +1,5 @@
+<launch>
+<!-- side: 1=right, 2=left -->
+<param name="side" value="1" />
+<param name="robot_param/length_robot_upperarm" value="1" />
+</launch>

@@ -140,6 +140,7 @@ void esmacat_ros_interface_class::ROS_parameters_callback(const ros::TimerEvent&
   int mode;
   float lower_soft_stop, upper_soft_stop;
   float weight,height,length_forearm,length_upperarm,length_hand;
+  int length_robot_upperarm = 0;
   int side;
 
 //  if (n.hasParam("robot_parameters"))
@@ -185,6 +186,40 @@ void esmacat_ros_interface_class::ROS_parameters_callback(const ros::TimerEvent&
   else
   {
     ROS_ERROR("Failed to get ROS parameters 'physiological_param'");
+  }
+
+  if (nh.hasParam("robot_param"))
+  {
+    nh.getParam("robot_param/length_robot_upperarm",length_robot_upperarm );
+
+    // Create mapping from 1-2-3-4-5 tags and robot lengths
+    switch(length_robot_upperarm){
+
+    case 1:
+      esmacat_sm.data->arm_weight_compensation_config.length_robot_upperarm_m = 0.28;
+      break;
+
+    case 2:
+      esmacat_sm.data->arm_weight_compensation_config.length_robot_upperarm_m = 0.2925;
+      break;
+
+    case 3:
+      esmacat_sm.data->arm_weight_compensation_config.length_robot_upperarm_m = 0.305;
+      break;
+
+    case 4:
+      esmacat_sm.data->arm_weight_compensation_config.length_robot_upperarm_m = 0.3175;
+      break;
+
+    default:
+      esmacat_sm.data->arm_weight_compensation_config.length_robot_upperarm_m = 0.28;
+      break;
+
+    }
+  }
+  else
+  {
+    ROS_ERROR("Failed to get ROS parameters 'robot_param'");
   }
 
   if (nh.hasParam("side"))
