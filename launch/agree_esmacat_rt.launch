@@ -1,0 +1,13 @@
+<launch>
+
+<node   pkg="agree_esmacat_pkg"
+        type="agree_esmacat_rt.sh"
+        name="agree_esmacat_rt"
+        output="screen"
+
+        launch-prefix="gnome-terminal --"
+        >
+
+</node>
+
+</launch>

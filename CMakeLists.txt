@@ -191,6 +191,8 @@ include_directories(
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 #)
 
+install(PROGRAMS scripts/agree_esmacat_rt.sh DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 #install(TARGETS ${PROJECT_NAME}_node DESTINATION ./bin)
 
 ## Mark libraries for installation

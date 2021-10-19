@@ -1,0 +1,12 @@
+<launch>
+
+<arg name="initial_pose_y" default="17.0" />'
+
+<node   pkg="agree_esmacat_pkg"
+        type="timed_roslaunch.sh"
+        args="2 agree_esmacat_pkg agree_interface.launch"
+        name="timed_agree_interface" output="screen">
+</node>
+
+</launch>
+
