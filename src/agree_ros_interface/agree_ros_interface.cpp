@@ -149,24 +149,26 @@ void esmacat_ros_interface_class::ROS_parameters_callback(__attribute__((unused)
   if (nh.hasParam("physiological_param"))
   {
     // Get ROS parameters for ROM maximum values (motor reference)
-    if( !nh.getParam("/physiological_param/ROM_Max", ROM_max) )
+    if( !nh.getParam("/physiological_param/ROM_Max", ROM_max) ){
       ROS_ERROR("Failed to get ROM Max parameters from server.");
-    else{
-      cout << "ROM Max: ";
-      for (auto i: ROM_max)
-        std::cout << i << ' ';
-      cout << endl;
     }
+//    else{
+//      cout << "ROM Max: ";
+//      for (auto i: ROM_max)
+//        std::cout << i << ' ';
+//      cout << endl;
+//    }
 
     // Get ROS parameters for ROM minimum values (motor reference)
-    if( !nh.getParam("/physiological_param/ROM_Min", ROM_min) )
+    if( !nh.getParam("/physiological_param/ROM_Min", ROM_min) ){
       ROS_ERROR("Failed to get ROM Min parameters from server.");
-    else{
-      cout << "ROM Min: ";
-      for (auto i: ROM_min)
-        std::cout << i << ' ';
-      cout << endl;
     }
+    //    else{
+    //      cout << "ROM Min: ";
+    //      for (auto i: ROM_min)
+    //        std::cout << i << ' ';
+    //      cout << endl;
+    //    }
   }
   else
   {
