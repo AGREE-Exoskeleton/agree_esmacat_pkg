@@ -233,5 +233,6 @@ install(PROGRAMS scripts/agree_esmacat_rt.sh DESTINATION ${CATKIN_PACKAGE_BIN_DE
 #add_subdirectory(src/smartbox_ros_interface)
 #add_subdirectory(src/testbed_ros_interface)
 add_subdirectory(src/agree_ros_interface)
+add_subdirectory(src/agree_ros_dummy)
 #add_subdirectory(src/agree_shared_memory_interface)
 
