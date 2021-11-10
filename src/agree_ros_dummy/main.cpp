@@ -10,6 +10,18 @@ int main(int argc, char **argv)
 
     ROS_INFO("AGREE Simulation node launched");
 
+    int side;
+    nh.getParam("side",side);
+
+//    if(side==RIGHT){
+//      ROS_INFO_STREAM("Right side selected... importing dummy rest position" << endl);
+//      nh.setParam("matlab/point0/configuration/J1",0.70);
+//      nh.setParam("matlab/point0/configuration/J2",-1.0);
+//      nh.setParam("matlab/point0/configuration/J3",0.15);
+//      nh.setParam("matlab/point0/configuration/J4",1.25);
+//      nh.setParam("matlab/point0/configuration/J5",0.0);
+//    }
+
     esmacat_ros_interface_class ros_interface;
 
     // Create timer for ROS parameters

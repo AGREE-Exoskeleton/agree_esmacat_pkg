@@ -30,9 +30,16 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     msg.setpoint_torque_mNm.clear();
     msg.setpoint_position_rad.clear();
 
+    double joint_position_rad[5];
+
+    joint_position_rad[0]= 0.70;
+    joint_position_rad[1] = -1.0;
+    joint_position_rad[2] = 0.15;
+    joint_position_rad[3] = 1.25;
+    joint_position_rad[4] = 0.0;
 
     for(int joint_index=0;joint_index<5;joint_index++){
-      msg.joint_position_rad.push_back(0.0);
+      msg.joint_position_rad.push_back(joint_position_rad[joint_index]);
       msg.joint_speed_rad_s.push_back(0.0);
       msg.joint_torque_mNm.push_back(0.0);
       msg.setpoint_torque_mNm.push_back(0.0);
