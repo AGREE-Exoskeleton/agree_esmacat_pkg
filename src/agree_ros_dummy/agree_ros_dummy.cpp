@@ -17,11 +17,35 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
   ros::Publisher publisher = n.advertise<agree_esmacat_pkg::agree_esmacat_status>("esmacat/status", 1000);
 
   //Variables that setup the publishing loop
-  int interim_roscount = 0;
+  uint64_t interim_roscount = 0;
 
-  //    Inform the real-time thread the system is running through ROS
-  ROS_WARN("ROS enabled.");
+  // Get side
+  int side = 0;
+  n.getParam("side",side);
 
+  ROS_WARN_STREAM("Side " << side);
+
+  // Dummy position
+  double joint_position_rad[5];
+
+  if(side == RIGHT){
+    joint_position_rad[0]= 0.70;
+    joint_position_rad[1] = -1.0;
+    joint_position_rad[2] = 0.15;
+    joint_position_rad[3] = 1.25;
+    joint_position_rad[4] = 0.0;
+  }
+  else if(side == LEFT){
+    joint_position_rad[0]= -0.70;
+    joint_position_rad[1] = 1.0;
+    joint_position_rad[2] = -0.15;
+    joint_position_rad[3] = 1.25;
+    joint_position_rad[4] = 0.0;
+  }
+  else
+  {
+    ROS_ERROR("Unable to load side. Please set side.");
+  }
   while (ros::ok()){
 
     msg.joint_position_rad.clear();
@@ -29,14 +53,6 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     msg.joint_torque_mNm.clear();
     msg.setpoint_torque_mNm.clear();
     msg.setpoint_position_rad.clear();
-
-    double joint_position_rad[5];
-
-    joint_position_rad[0]= 0.70;
-    joint_position_rad[1] = -1.0;
-    joint_position_rad[2] = 0.15;
-    joint_position_rad[3] = 1.25;
-    joint_position_rad[4] = 0.0;
 
     for(int joint_index=0;joint_index<5;joint_index++){
       msg.joint_position_rad.push_back(joint_position_rad[joint_index]);
@@ -47,6 +63,7 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
     }
 
     msg.status = interim_status;
+    msg.elapsed_time = interim_roscount*10;
 
     publisher.publish(msg);
 
