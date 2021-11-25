@@ -1,6 +1,6 @@
 <launch>
   <node name="shared_memory_interface" pkg="agree_esmacat_pkg" type="agree_ros_interface" />
-    <machine name="smartbox" address="10.0.0.1" user="smartbox" env-loader="/opt/ros/melodic/env_remote.sh" default="scope" />
+    <machine name="smartbox" address="192.168.0.11" user="smartbox" env-loader="/opt/ros/melodic/env_remote.sh" default="true" />
     <include file="$(find agree_fsm_pkg)/launch/FSM_test.launch" />
   <node machine="smartbox" pkg="agree_fsm_pkg" name="agree_fsm" type="agree_fsm" output="screen"/>
 </launch>

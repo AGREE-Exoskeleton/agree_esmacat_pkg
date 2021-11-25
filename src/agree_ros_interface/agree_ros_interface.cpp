@@ -50,7 +50,8 @@ void esmacat_ros_interface_class::ROS_publish_thread(){
 
 
 
-    if (esmacat_sm.data->control_mode_command == 0 || esmacat_sm.data->control_mode_status == 0 || ros::master::check() == 0)
+//    if (esmacat_sm.data->control_mode_command == 0 || esmacat_sm.data->control_mode_status == 0 || ros::master::check() == 0)
+      if (ros::master::check() == 0)
     {
       esmacat_sm.set_use_ros(false);
       ROS_WARN("ROS disabled.");
@@ -152,43 +153,27 @@ void esmacat_ros_interface_class::ROS_parameters_callback(__attribute__((unused)
     if( !nh.getParam("/physiological_param/ROM_Max", ROM_max) ){
       ROS_ERROR("Failed to get ROM Max parameters from server.");
     }
-//    else{
-//      cout << "ROM Max: ";
-//      for (auto i: ROM_max)
-//        std::cout << i << ' ';
-//      cout << endl;
-//    }
+    else{
+      for (unsigned long joint_index=0;joint_index<5;joint_index++){
+        // TODO: Check conversion to robot min/max...
+        esmacat_sm.data->impedance_control_command[joint_index].soft_stop_upper_limit_rad = ROM_max[joint_index];
+      }
+    }
 
     // Get ROS parameters for ROM minimum values (motor reference)
     if( !nh.getParam("/physiological_param/ROM_Min", ROM_min) ){
       ROS_ERROR("Failed to get ROM Min parameters from server.");
     }
-    //    else{
-    //      cout << "ROM Min: ";
-    //      for (auto i: ROM_min)
-    //        std::cout << i << ' ';
-    //      cout << endl;
-    //    }
-  }
-  else
-  {
-    ROS_ERROR("Failed to get ROS parameters 'physiological_param'");
-  }
-
+    else{
+      for (unsigned long joint_index=0;joint_index<5;joint_index++){
+        // TODO: Check conversion to robot min/max...
+        esmacat_sm.data->impedance_control_command[joint_index].soft_stop_lower_limit_rad = ROM_min[joint_index];
+      }
+    }
 
   // NOTE: J2 override
-  ROM_max[1] = 0.0/180.0*M_PI;
+  //ROM_max[1] = 0.0/180.0*M_PI;
 
-  for (unsigned long joint_index=0;joint_index<5;joint_index++){
-    // TODO: Check conversion to robot min/max...
-    esmacat_sm.data->impedance_control_command[joint_index].soft_stop_lower_limit_rad = ROM_min[joint_index];
-    esmacat_sm.data->impedance_control_command[joint_index].soft_stop_upper_limit_rad = ROM_max[joint_index];
-  }
-
-
-
-  if (nh.hasParam("physiological_param"))
-  {
     nh.getParam("physiological_param/weight",weight );
     nh.getParam("physiological_param/height",height );
     nh.getParam("physiological_param/length_forearm",length_forearm );
