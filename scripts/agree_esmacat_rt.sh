@@ -17,7 +17,7 @@
 echo "Running the real-time program"
 cd /home/esmacat/esmacat_rt/esmacat_master_high_performance-release/esmacat_applications/agree_esmacat_rt
 #echo esmacat | exec sudo -S ./run.sh &
-exec sudo /home/esmacat/esmacat_rt/esmacat_master_high_performance-release/esmacat_applications/agree_esmacat_rt/agree_esmacat_rt &
+exec sudo /home/esmacat/esmacat_rt/esmacat_master_high_performance-release/esmacat_applications/agree_esmacat_rt/agree_esmacat_rt --nodaemon &
 exec sudo /home/esmacat/esmacat_rt/esmacat_master_high_performance-release/esmacat_core/application/ecat_main
 
 
