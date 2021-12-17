@@ -74,8 +74,9 @@ void esmacat_ros_interface_class::ROS_subscribe_callback(const agree_esmacat_pkg
   esmacat_sm.data->control_mode_command                             = (robot_control_mode_t) msg.command;
 
   // Save weight assistance gains to shared memory
+  // NOTE: as required by the therapists, use only one parameter for compensation of upperarm and forearm.
   esmacat_sm.data->arm_weight_compensation_config.upperarm_weight_assistance = msg.weight_assistance[0];
-  esmacat_sm.data->arm_weight_compensation_config.forearm_weight_assistance = msg.weight_assistance[1];
+  esmacat_sm.data->arm_weight_compensation_config.forearm_weight_assistance = msg.weight_assistance[0];
 
 
   for(unsigned long joint_index = 0; joint_index < 5; joint_index++){
